@@ -39,9 +39,94 @@
   object-fit: contain;
 }
 
+.login-subtitle {
+  margin-bottom: 1rem !important;
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background-color: #2d1b1b; // Dark red background
+  border: 1px solid #8b0000; // Dark red border
+  border-radius: 8px;
+  color: #ff6b6b; // Light red text
+  font-size: 0.875rem;
+  line-height: 1.4;
+  
+  mat-icon {
+    color: #ff4444;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+  }
+}
+
 .full-width {
   width: 100%;
   margin-bottom: 1rem;
+}
+
+// Custom Material form field styling for dark theme
+.login-card {
+  ::ng-deep {
+    // Form field outline styling
+    .mat-mdc-form-field {
+      --mdc-outlined-text-field-label-text-color: #cccccc;
+      --mdc-outlined-text-field-input-text-color: #cccccc;
+      --mdc-outlined-text-field-outline-color: #3c3c3c;
+      --mdc-outlined-text-field-hover-outline-color: #569cd6;
+      --mdc-outlined-text-field-focus-outline-color: #569cd6;
+      --mdc-outlined-text-field-disabled-outline-color: #2d2d30;
+      
+      .mdc-text-field--filled {
+        background-color: #2d2d30;
+      }
+      
+      .mdc-floating-label {
+        color: #cccccc !important;
+      }
+      
+      .mat-mdc-input-element {
+        color: #cccccc !important;
+        caret-color: #569cd6;
+      }
+      
+      .mat-mdc-input-element::placeholder {
+        color: #969696 !important;
+      }
+    }
+    
+    // Select field styling
+    .mat-mdc-select {
+      --mdc-outlined-text-field-label-text-color: #cccccc;
+      --mdc-outlined-text-field-input-text-color: #cccccc;
+      --mdc-outlined-text-field-outline-color: #3c3c3c;
+      --mdc-outlined-text-field-hover-outline-color: #569cd6;
+      --mdc-outlined-text-field-focus-outline-color: #569cd6;
+      
+      .mat-mdc-select-value {
+        color: #cccccc !important;
+      }
+      
+      .mat-mdc-select-arrow {
+        color: #cccccc !important;
+      }
+    }
+    
+    // Error styling
+    .mat-mdc-form-field-error {
+      color: #ff6b6b !important;
+    }
+    
+    // Hint styling
+    .mat-mdc-form-field-hint {
+      color: #969696 !important;
+    }
+  }
 }
 
 .form-actions {
@@ -62,12 +147,12 @@
 .project-option {
   .project-name {
     font-weight: 500;
-    color: #333;
+    color: #cccccc; // Light gray for dark theme
   }
   
   .project-description {
     font-size: 0.875rem;
-    color: #666;
+    color: #999999; // Medium gray for dark theme
     margin-top: 0.25rem;
     line-height: 1.3;
   }

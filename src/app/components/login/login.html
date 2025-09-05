@@ -12,12 +12,18 @@
     <!-- Step 1: Organization and Token -->
     <div *ngIf="!showProjectSelection">
       <mat-card-header>
-        <mat-card-subtitle>
+        <mat-card-subtitle class="login-subtitle">
           Enter your organization details to get started
         </mat-card-subtitle>
       </mat-card-header>
       
       <mat-card-content>
+        <!-- Error message display -->
+        <div *ngIf="errorMessage" class="error-message">
+          <mat-icon>error</mat-icon>
+          <span>{{ errorMessage }}</span>
+        </div>
+
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
           <mat-form-field appearance="outline" class="full-width">
             <mat-label>Organization Name</mat-label>

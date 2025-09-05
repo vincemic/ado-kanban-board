@@ -39,6 +39,7 @@ export class Login implements OnInit {
   availableProjects: AzureDevOpsProject[] = [];
   organizationUrl = '';
   accessToken = '';
+  errorMessage = '';
   private azureDevOpsService: AzureDevOpsService | any;
 
   constructor(
@@ -67,11 +68,17 @@ export class Login implements OnInit {
     if (this.authService.isAuthenticated()) {
       this.router.navigate(['/board']);
     }
+    
+    // Clear error message when form values change
+    this.loginForm.valueChanges.subscribe(() => {
+      this.errorMessage = '';
+    });
   }
 
   onSubmit(): void {
     if (this.loginForm.valid && !this.isLoading) {
       this.isLoading = true;
+      this.errorMessage = ''; // Clear previous errors
       
       const organizationName = this.loginForm.value.organizationName.trim();
       this.organizationUrl = `https://dev.azure.com/${organizationName}`;
@@ -95,8 +102,25 @@ export class Login implements OnInit {
         },
         error: (error: any) => {
           console.error('Failed to fetch projects:', error);
+          console.log('Error status:', error.status);
+          console.log('Error message:', error.message);
+          console.log('Full error object:', error);
           this.isLoading = false;
-          // TODO: Show error message to user
+          
+          // Provide user-friendly error messages
+          if (error.status === 0) {
+            this.errorMessage = 'Unable to connect to Azure DevOps. This might be due to CORS restrictions when calling Azure DevOps APIs directly from the browser. Consider using a proxy server or Azure DevOps Extensions.';
+          } else if (error.status === 401) {
+            this.errorMessage = 'Authentication failed. Please check your Personal Access Token and ensure it has the necessary permissions.';
+          } else if (error.status === 403) {
+            this.errorMessage = 'Access denied. Please ensure your Personal Access Token has permissions to read projects.';
+          } else if (error.status === 404) {
+            this.errorMessage = 'Organization not found. Please check the organization name and try again.';
+          } else {
+            this.errorMessage = `Error connecting to Azure DevOps: ${error.message || 'Unknown error'}. Try using "test-this" as organization name for demo mode.`;
+          }
+          
+          console.log('Setting error message to:', this.errorMessage);
         }
       });
     }
