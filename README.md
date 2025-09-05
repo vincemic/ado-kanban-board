@@ -52,16 +52,56 @@ ng serve
 
 ### Using the Application
 
-1. **Login**: Enter your Azure DevOps organization URL, project name, and Personal Access Token
-2. **View Board**: See your work items organized in columns by state
-3. **Drag & Drop**: Move work items between columns to change their state
-4. **Create Work Items**: Click the "New Work Item" button to add new items
-5. **Edit Work Items**: Click on any work item to edit its details
-6. **Refresh**: Use the refresh button to reload data from Azure DevOps
+1. **Login**: Enter your Azure DevOps organization name and Personal Access Token
+2. **Mock Mode**: Toggle mock mode for testing with sample data (no real Azure DevOps connection required)
+3. **View Board**: See your work items organized in columns by state
+4. **Drag & Drop**: Move work items between columns to change their state
+5. **Create Work Items**: Click the "New Work Item" button to add new items
+6. **Edit Work Items**: Click on any work item to edit its details
+7. **Refresh**: Use the refresh button to reload data from Azure DevOps
 
-## Development server
+### Mock Mode for Testing
 
-To start a local development server, run:
+The application includes a mock mode for testing purposes:
+
+- **URL Parameter**: Add `?mock=true` to the URL to enable mock mode
+- **Toggle Button**: Use the toggle button on the login page to switch between real and mock modes
+- **Sample Data**: Mock mode provides realistic sample work items and projects
+- **Local Storage**: Your mock mode preference is saved locally
+
+Mock mode is perfect for:
+- Testing the application without Azure DevOps access
+- Demonstrating functionality
+- Development and debugging
+- E2E testing
+
+## Quick Testing
+
+### Test with Mock Data (No Azure DevOps Required)
+
+1. Start the development server:
+```bash
+ng serve
+```
+
+2. Open your browser to `http://localhost:4200?mock=true`
+
+3. Or use the toggle button on the login page to switch to mock mode
+
+4. When in mock mode:
+   - Organization name can be anything (e.g., "testorg")
+   - PAT token can be anything (e.g., "fake-token")
+   - You'll see sample projects and work items
+   - All drag-and-drop functionality works with mock data
+
+### Test with Real Azure DevOps
+
+1. Ensure you have an Azure DevOps organization and PAT token
+2. Start the application normally: `ng serve`
+3. Navigate to `http://localhost:4200`
+4. Enter your real organization name and PAT token
+5. Connect to your actual Azure DevOps projects
+
 
 ```bash
 ng serve

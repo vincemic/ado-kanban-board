@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { WorkItem, WorkItemState, WorkItemType, AzureDevOpsConnection } from '../models/work-item.model';
+import { WorkItem, WorkItemState, WorkItemType, AzureDevOpsConnection, AzureDevOpsProject } from '../models/work-item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -39,6 +39,37 @@ export class AzureDevOpsService {
       'Authorization': `Basic ${btoa(':' + connection.accessToken)}`,
       'Content-Type': 'application/json'
     });
+  }
+
+  private getHeadersWithToken(organizationUrl: string, accessToken: string): HttpHeaders {
+    return new HttpHeaders({
+      'Authorization': `Basic ${btoa(':' + accessToken)}`,
+      'Content-Type': 'application/json'
+    });
+  }
+
+  getProjects(organizationUrl: string, accessToken: string): Observable<AzureDevOpsProject[]> {
+    const url = `${organizationUrl}/_apis/projects?api-version=7.0`;
+    const headers = this.getHeadersWithToken(organizationUrl, accessToken);
+
+    return this.http.get<any>(url, { headers })
+      .pipe(
+        map(response => {
+          const projects: AzureDevOpsProject[] = response.value.map((project: any) => ({
+            id: project.id,
+            name: project.name,
+            description: project.description,
+            url: project.url,
+            state: project.state,
+            visibility: project.visibility
+          }));
+          return projects;
+        }),
+        catchError(error => {
+          console.error('Error fetching projects:', error);
+          return throwError(() => error);
+        })
+      );
   }
 
   loadWorkItems(): void {

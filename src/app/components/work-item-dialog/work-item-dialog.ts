@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 
 import { WorkItem, WorkItemState } from '../../models/work-item.model';
 import { AzureDevOpsService } from '../../services/azure-devops.service';
+import { AzureDevOpsServiceFactory } from '../../services/azure-devops-service-factory.service';
 
 export interface WorkItemDialogData {
   workItem?: WorkItem;
@@ -36,13 +37,15 @@ export class WorkItemDialog implements OnInit {
   isEdit: boolean;
   isLoading = false;
   availableStates: WorkItemState[];
+  private azureDevOpsService: AzureDevOpsService | any;
 
   constructor(
     private fb: FormBuilder,
-    private azureDevOpsService: AzureDevOpsService,
+    private serviceFactory: AzureDevOpsServiceFactory,
     private dialogRef: MatDialogRef<WorkItemDialog>,
     @Inject(MAT_DIALOG_DATA) public data: WorkItemDialogData
   ) {
+    this.azureDevOpsService = this.serviceFactory.getService();
     this.isEdit = !!data.workItem;
     this.availableStates = data.availableStates;
 
@@ -89,10 +92,10 @@ export class WorkItemDialog implements OnInit {
       } else {
         // Create new work item
         this.azureDevOpsService.createWorkItem(workItemData).subscribe({
-          next: (newWorkItem) => {
+          next: (newWorkItem: WorkItem) => {
             this.dialogRef.close(newWorkItem);
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error creating work item:', error);
             this.isLoading = false;
             // TODO: Show error message

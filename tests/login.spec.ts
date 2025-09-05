@@ -1,55 +1,93 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Login Page', () => {
+  test.beforeEach(async ({ page }) => {
+    // Enable mock mode for all tests
+    await page.goto('/?mock=true');
+  });
+
   test('should display login form', async ({ page }) => {
-    await page.goto('/');
-    
-    // Check if we're redirected to login page
-    await expect(page).toHaveURL('/login');
+    // Check if we're redirected to login page or already there
+    await expect(page).toHaveURL(/\/(login)?\?mock=true/);
     
     // Check for login form elements
-    await expect(page.locator('h1')).toContainText('Connect to Azure DevOps');
-    await expect(page.locator('input[formControlName="organizationUrl"]')).toBeVisible();
-    await expect(page.locator('input[formControlName="projectName"]')).toBeVisible();
-    await expect(page.locator('input[formControlName="personalAccessToken"]')).toBeVisible();
+    await expect(page.locator('mat-card-title')).toContainText('Connect to Azure DevOps');
+    await expect(page.locator('input[formControlName="organizationName"]')).toBeVisible();
+    await expect(page.locator('input[formControlName="accessToken"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
+    
+    // Should show mock mode indicator
+    await expect(page.locator('.service-mode')).toContainText('mock mode');
   });
 
   test('should show validation errors for empty form', async ({ page }) => {
-    await page.goto('/login');
-    
-    // Click submit without filling form
-    await page.click('button[type="submit"]');
-    
-    // Check for validation errors
-    await expect(page.locator('mat-error')).toBeVisible();
+    // Try to click submit button, but it should be disabled when form is empty
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeDisabled();
   });
 
-  test('should validate organization URL format', async ({ page }) => {
-    await page.goto('/login');
+  test('should toggle between mock and real mode', async ({ page }) => {
+    // Should start in mock mode
+    await expect(page.locator('.service-mode')).toContainText('mock mode');
     
-    // Fill in invalid URL
-    await page.fill('input[formControlName="organizationUrl"]', 'invalid-url');
-    await page.fill('input[formControlName="projectName"]', 'test-project');
-    await page.fill('input[formControlName="personalAccessToken"]', 'test-token');
+    // Click toggle button
+    await page.click('button:has-text("Switch to Real Azure DevOps")');
     
-    // Click submit
-    await page.click('button[type="submit"]');
+    // Should switch to real mode
+    await expect(page.locator('.service-mode')).toContainText('real mode');
     
-    // Should show URL validation error
-    await expect(page.locator('mat-error')).toContainText('Please enter a valid Azure DevOps organization URL');
+    // Toggle back
+    await page.click('button:has-text("Switch to Mock Mode")');
+    await expect(page.locator('.service-mode')).toContainText('mock mode');
   });
 
-  test('should accept valid organization URL format', async ({ page }) => {
-    await page.goto('/login');
+  test('should validate organization name format', async ({ page }) => {
+    // Fill in invalid organization name (with special characters)
+    await page.fill('input[formControlName="organizationName"]', 'invalid@org!');
+    await page.fill('input[formControlName="accessToken"]', 'test-token');
     
-    // Fill in valid URL format
-    await page.fill('input[formControlName="organizationUrl"]', 'https://dev.azure.com/myorg');
-    await page.fill('input[formControlName="projectName"]', 'test-project');
-    await page.fill('input[formControlName="personalAccessToken"]', 'test-token');
+    // Form should be invalid due to organization name validation
+    const submitButton = page.locator('button[type="submit"]');
+    await expect(submitButton).toBeDisabled();
+    
+    // Should show organization name validation error
+    await expect(page.locator('mat-error')).toContainText('Please enter a valid organization name');
+  });
+
+  test('should accept valid organization name format', async ({ page }) => {
+    // Fill in valid organization name
+    await page.fill('input[formControlName="organizationName"]', 'myorg');
+    await page.fill('input[formControlName="accessToken"]', 'test-token');
     
     // Form should be valid (submit button enabled)
     const submitButton = page.locator('button[type="submit"]');
     await expect(submitButton).not.toBeDisabled();
+  });
+
+  test('should complete mock login flow', async ({ page }) => {
+    // Fill in form with any values (mock mode)
+    await page.fill('input[formControlName="organizationName"]', 'testorg');
+    await page.fill('input[formControlName="accessToken"]', 'fake-token');
+    
+    // Submit form
+    await page.click('button[type="submit"]');
+    
+    // Should proceed to project selection
+    await expect(page.locator('mat-card-title')).toContainText('Select Project');
+    
+    // Should show mock projects
+    await page.click('mat-select[formControlName="selectedProject"]');
+    await expect(page.locator('mat-option')).toContainText('Sample Project');
+    await expect(page.locator('mat-option')).toContainText('Demo Project');
+    await expect(page.locator('mat-option')).toContainText('Test Project');
+    
+    // Select a project
+    await page.click('mat-option:has-text("Sample Project")');
+    
+    // Connect to project
+    await page.click('button:has-text("Connect")');
+    
+    // Should navigate to kanban board
+    await expect(page).toHaveURL(/\/board/);
   });
 });

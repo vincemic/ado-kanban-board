@@ -19,7 +19,8 @@
       "webRoot": "${workspaceFolder}/src",
       "sourceMapPathOverrides": {
         "webpack:/*": "${webRoot}/*"
-      }
+      },
+      "preLaunchTask": "ng: serve"
     },
     {
       "name": "🧪 Debug Playwright Tests",

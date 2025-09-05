@@ -2,6 +2,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   padding: 2rem;
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -20,6 +21,73 @@
 
 .form-actions {
   margin-top: 1.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.back-button {
+  flex: 0 0 auto;
+}
+
+.connect-button {
+  flex: 1;
+}
+
+.project-option {
+  .project-name {
+    font-weight: 500;
+    color: #333;
+  }
+  
+  .project-description {
+    font-size: 0.875rem;
+    color: #666;
+    margin-top: 0.25rem;
+    line-height: 1.3;
+  }
+}
+
+// Mock mode styling
+.service-mode {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  font-weight: 500;
+  
+  &.mock-mode {
+    background-color: #fff3e0;
+    color: #f57c00;
+  }
+}
+
+.mock-toggle-container {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.mock-toggle-btn {
+  color: #666;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  
+  &.mock-active {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border-color: #f57c00;
+  }
+  
+  &:hover {
+    background-color: #f5f5f5;
+    
+    &.mock-active {
+      background-color: #ffe0b2;
+    }
+  }
 }
 
 .info-section {
@@ -54,5 +122,16 @@
   .login-card,
   .info-section {
     max-width: 100%;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .back-button,
+  .connect-button {
+    width: 100%;
+    flex: none;
   }
 }

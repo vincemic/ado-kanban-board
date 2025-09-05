@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { AuthService } from '../../services/auth.service';
 import { AzureDevOpsService } from '../../services/azure-devops.service';
+import { AzureDevOpsServiceFactory } from '../../services/azure-devops-service-factory.service';
 import { WorkItem, WorkItemState } from '../../models/work-item.model';
 import { WorkItemDialog } from '../work-item-dialog/work-item-dialog';
 
@@ -35,15 +36,18 @@ export class KanbanBoard implements OnInit, OnDestroy {
   projectName = '';
   isLoading = true;
   errorMessage = '';
+  private azureDevOpsService: AzureDevOpsService | any;
   
   private destroy$ = new Subject<void>();
 
   constructor(
     private authService: AuthService,
-    private azureDevOpsService: AzureDevOpsService,
+    private serviceFactory: AzureDevOpsServiceFactory,
     private router: Router,
     private dialog: MatDialog
-  ) {}
+  ) {
+    this.azureDevOpsService = this.serviceFactory.getService();
+  }
 
   ngOnInit(): void {
     // Check authentication
@@ -61,14 +65,14 @@ export class KanbanBoard implements OnInit, OnDestroy {
     // Subscribe to work items and states
     this.azureDevOpsService.workItems$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(workItems => {
+      .subscribe((workItems: WorkItem[]) => {
         this.workItems = workItems;
         this.isLoading = false;
       });
 
     this.azureDevOpsService.workItemStates$
       .pipe(takeUntil(this.destroy$))
-      .subscribe(states => {
+      .subscribe((states: WorkItemState[]) => {
         this.workItemStates = states;
       });
 
@@ -119,14 +123,14 @@ export class KanbanBoard implements OnInit, OnDestroy {
   private updateWorkItemState(workItem: WorkItem, newState: string): void {
     this.azureDevOpsService.updateWorkItemState(workItem.id, newState)
       .subscribe({
-        next: (updatedWorkItem) => {
+        next: (updatedWorkItem: WorkItem) => {
           // Update the local work item
           const index = this.workItems.findIndex(item => item.id === updatedWorkItem.id);
           if (index !== -1) {
             this.workItems[index] = updatedWorkItem;
           }
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error updating work item state:', error);
           this.errorMessage = 'Failed to update work item state. Please try again.';
           this.refreshBoard(); // Refresh to revert changes

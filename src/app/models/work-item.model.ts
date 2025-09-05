@@ -29,3 +29,12 @@ export interface AzureDevOpsConnection {
   projectName: string;
   accessToken?: string;
 }
+
+export interface AzureDevOpsProject {
+  id: string;
+  name: string;
+  description?: string;
+  url?: string;
+  state?: string;
+  visibility?: string;
+}

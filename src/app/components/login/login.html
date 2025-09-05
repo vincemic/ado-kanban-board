@@ -1,82 +1,123 @@
 <div class="login-container">
   <mat-card class="login-card">
-    <mat-card-header>
-      <mat-card-title>Connect to Azure DevOps</mat-card-title>
-      <mat-card-subtitle>Enter your Azure DevOps organization details</mat-card-subtitle>
-    </mat-card-header>
-    
-    <mat-card-content>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Organization URL</mat-label>
-          <input matInput 
-                 formControlName="organizationUrl" 
-                 placeholder="https://dev.azure.com/yourorg"
-                 required>
-          <mat-hint>Your Azure DevOps organization URL</mat-hint>
-          <mat-error *ngIf="loginForm.get('organizationUrl')?.errors?.['required']">
-            Organization URL is required
-          </mat-error>
-          <mat-error *ngIf="loginForm.get('organizationUrl')?.errors?.['pattern']">
-            Please enter a valid Azure DevOps URL
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Project Name</mat-label>
-          <input matInput 
-                 formControlName="projectName" 
-                 placeholder="MyProject"
-                 required>
-          <mat-hint>Your Azure DevOps project name</mat-hint>
-          <mat-error *ngIf="loginForm.get('projectName')?.errors?.['required']">
-            Project name is required
-          </mat-error>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Personal Access Token</mat-label>
-          <input matInput 
-                 type="password"
-                 formControlName="accessToken" 
-                 placeholder="Your PAT token"
-                 required>
-          <mat-hint>
-            <a href="https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate" 
-               target="_blank" rel="noopener">
-              How to create a Personal Access Token
-            </a>
-          </mat-hint>
-          <mat-error *ngIf="loginForm.get('accessToken')?.errors?.['required']">
-            Access token is required
-          </mat-error>
-        </mat-form-field>
-
-        <div class="form-actions">
-          <button mat-raised-button 
-                  color="primary" 
-                  type="submit" 
-                  [disabled]="loginForm.invalid || isLoading"
-                  class="full-width">
-            <mat-icon *ngIf="isLoading">refresh</mat-icon>
-            {{ isLoading ? 'Connecting...' : 'Connect' }}
+    <!-- Step 1: Organization and Token -->
+    <div *ngIf="!showProjectSelection">
+      <mat-card-header>
+        <mat-card-title>Connect to Azure DevOps</mat-card-title>
+        <mat-card-subtitle>
+          Enter your organization name and Personal Access Token
+          <span class="service-mode" [class.mock-mode]="isMockMode()">
+            ({{ getCurrentServiceType() }} mode)
+          </span>
+        </mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <!-- Mock mode toggle -->
+        <div class="mock-toggle-container">
+          <button mat-button 
+                  type="button" 
+                  (click)="toggleMockMode()"
+                  class="mock-toggle-btn"
+                  [class.mock-active]="isMockMode()">
+            <mat-icon>{{ isMockMode() ? 'cloud_off' : 'cloud' }}</mat-icon>
+            {{ isMockMode() ? 'Switch to Real Azure DevOps' : 'Switch to Mock Mode' }}
           </button>
         </div>
-      </form>
-    </mat-card-content>
-  </mat-card>
 
-  <div class="info-section">
-    <mat-card>
-      <mat-card-content>
-        <h3>Getting Started</h3>
-        <ol>
-          <li>Go to your Azure DevOps organization</li>
-          <li>Create a Personal Access Token with Work Items (read & write) permissions</li>
-          <li>Enter your organization URL, project name, and token above</li>
-          <li>Start managing your work items on the Kanban board!</li>
-        </ol>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Organization Name</mat-label>
+            <input matInput 
+                   formControlName="organizationName" 
+                   placeholder="yourorg"
+                   required>
+            <mat-hint>Your Azure DevOps organization name (will be used as https://dev.azure.com/yourorg)</mat-hint>
+            <mat-error *ngIf="loginForm.get('organizationName')?.errors?.['required']">
+              Organization name is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('organizationName')?.errors?.['pattern']">
+              Please enter a valid organization name (letters, numbers, hyphens, underscores only)
+            </mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Personal Access Token</mat-label>
+            <input matInput 
+                   type="password"
+                   formControlName="accessToken" 
+                   placeholder="Your PAT token"
+                   required>
+            <mat-hint>
+              <a href="https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate" 
+                 target="_blank" rel="noopener">
+                How to create a Personal Access Token
+              </a>
+            </mat-hint>
+            <mat-error *ngIf="loginForm.get('accessToken')?.errors?.['required']">
+              Access token is required
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="loginForm.invalid || isLoading"
+                    class="full-width">
+              <mat-icon *ngIf="isLoading">refresh</mat-icon>
+              {{ isLoading ? 'Loading Projects...' : 'Next' }}
+            </button>
+          </div>
+        </form>
       </mat-card-content>
-    </mat-card>
-  </div>
+    </div>
+
+    <!-- Step 2: Project Selection -->
+    <div *ngIf="showProjectSelection">
+      <mat-card-header>
+        <mat-card-title>Select Project</mat-card-title>
+        <mat-card-subtitle>Choose the Azure DevOps project you want to work with</mat-card-subtitle>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="projectForm" (ngSubmit)="onProjectSubmit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Project</mat-label>
+            <mat-select formControlName="selectedProject" required>
+              <mat-option *ngFor="let project of availableProjects" [value]="project.name">
+                <div class="project-option">
+                  <div class="project-name">{{ project.name }}</div>
+                  <div class="project-description" *ngIf="project.description">{{ project.description }}</div>
+                </div>
+              </mat-option>
+            </mat-select>
+            <mat-hint>Select the project containing your work items</mat-hint>
+            <mat-error *ngIf="projectForm.get('selectedProject')?.errors?.['required']">
+              Please select a project
+            </mat-error>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-button 
+                    type="button" 
+                    (click)="goBack()"
+                    [disabled]="isLoading"
+                    class="back-button">
+              <mat-icon>arrow_back</mat-icon>
+              Back
+            </button>
+            <button mat-raised-button 
+                    color="primary" 
+                    type="submit" 
+                    [disabled]="projectForm.invalid || isLoading"
+                    class="connect-button">
+              <mat-icon *ngIf="isLoading">refresh</mat-icon>
+              {{ isLoading ? 'Connecting...' : 'Connect' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </div>
+  </mat-card>
 </div>
