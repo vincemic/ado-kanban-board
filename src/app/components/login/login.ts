@@ -77,6 +77,15 @@ export class Login implements OnInit {
       this.organizationUrl = `https://dev.azure.com/${organizationName}`;
       this.accessToken = this.loginForm.value.accessToken;
 
+      // Check if organization name is "test-this" and enable mock mode
+      if (organizationName === 'test-this') {
+        this.config.setMockMode(true);
+        this.azureDevOpsService = this.serviceFactory.getService();
+      } else {
+        this.config.setMockMode(false);
+        this.azureDevOpsService = this.serviceFactory.getService();
+      }
+
       // First, fetch available projects
       this.azureDevOpsService.getProjects(this.organizationUrl, this.accessToken).subscribe({
         next: (projects: AzureDevOpsProject[]) => {
@@ -131,19 +140,5 @@ export class Login implements OnInit {
 
   getCurrentServiceType(): string {
     return this.serviceFactory.getCurrentServiceType();
-  }
-
-  toggleMockMode(): void {
-    this.config.toggleMockMode();
-    this.azureDevOpsService = this.serviceFactory.getService();
-    // Reset form and state when switching modes
-    this.loginForm.reset();
-    this.projectForm.reset();
-    this.showProjectSelection = false;
-    this.availableProjects = [];
-  }
-
-  isMockMode(): boolean {
-    return this.config.useMockServices;
   }
 }

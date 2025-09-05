@@ -27,14 +27,8 @@ export class AppConfigService {
       this._useMockServices = storedMockMode === 'true';
     }
     
-    // For development, you can also check environment
-    // In a real app, you might use environment.production
-    if (typeof window !== 'undefined' && (window as any).location?.hostname === 'localhost') {
-      // Default to mock mode in development if no explicit setting
-      if (mockParam === null && storedMockMode === null) {
-        this._useMockServices = true;
-      }
-    }
+    // Default to production mode (false) regardless of environment
+    // Mock mode will be automatically enabled when organization name is "test-this"
   }
 
   get useMockServices(): boolean {

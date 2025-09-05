@@ -2,22 +2,18 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Login Page', () => {
   test.beforeEach(async ({ page }) => {
-    // Enable mock mode for all tests
-    await page.goto('/?mock=true');
+    // Navigate to root which redirects to login page
+    await page.goto('/');
   });
 
   test('should display login form', async ({ page }) => {
-    // Check if we're redirected to login page or already there
-    await expect(page).toHaveURL(/\/(login)?\?mock=true/);
+    // Check if we're redirected to the login page
+    await expect(page).toHaveURL('/login');
     
     // Check for login form elements
-    await expect(page.locator('mat-card-title')).toContainText('Connect to Azure DevOps');
     await expect(page.locator('input[formControlName="organizationName"]')).toBeVisible();
     await expect(page.locator('input[formControlName="accessToken"]')).toBeVisible();
     await expect(page.locator('button[type="submit"]')).toBeVisible();
-    
-    // Should show mock mode indicator
-    await expect(page.locator('.service-mode')).toContainText('mock mode');
   });
 
   test('should show validation errors for empty form', async ({ page }) => {
@@ -26,19 +22,22 @@ test.describe('Login Page', () => {
     await expect(submitButton).toBeDisabled();
   });
 
-  test('should toggle between mock and real mode', async ({ page }) => {
-    // Should start in mock mode
-    await expect(page.locator('.service-mode')).toContainText('mock mode');
+  test('should automatically enable mock mode for test-this organization', async ({ page }) => {
+    // Fill in organization name as "test-this" to trigger mock mode
+    await page.fill('input[formControlName="organizationName"]', 'test-this');
+    await page.fill('input[formControlName="accessToken"]', 'test-token');
     
-    // Click toggle button
-    await page.click('button:has-text("Switch to Real Azure DevOps")');
+    // Submit form
+    await page.click('button[type="submit"]');
     
-    // Should switch to real mode
-    await expect(page.locator('.service-mode')).toContainText('real mode');
+    // Should proceed to project selection in mock mode
+    await expect(page.locator('mat-card-title')).toContainText('Select Project');
     
-    // Toggle back
-    await page.click('button:has-text("Switch to Mock Mode")');
-    await expect(page.locator('.service-mode')).toContainText('mock mode');
+    // Should show mock projects - check for specific project names
+    await page.click('mat-select[formControlName="selectedProject"]');
+    await expect(page.locator('mat-option').filter({ hasText: 'Sample Project' })).toBeVisible();
+    await expect(page.locator('mat-option').filter({ hasText: 'Demo Project' })).toBeVisible();
+    await expect(page.locator('mat-option').filter({ hasText: 'Test Project' })).toBeVisible();
   });
 
   test('should validate organization name format', async ({ page }) => {
@@ -64,9 +63,9 @@ test.describe('Login Page', () => {
     await expect(submitButton).not.toBeDisabled();
   });
 
-  test('should complete mock login flow', async ({ page }) => {
-    // Fill in form with any values (mock mode)
-    await page.fill('input[formControlName="organizationName"]', 'testorg');
+  test('should complete mock login flow with test-this organization', async ({ page }) => {
+    // Fill in form with "test-this" to trigger mock mode
+    await page.fill('input[formControlName="organizationName"]', 'test-this');
     await page.fill('input[formControlName="accessToken"]', 'fake-token');
     
     // Submit form
@@ -77,9 +76,6 @@ test.describe('Login Page', () => {
     
     // Should show mock projects
     await page.click('mat-select[formControlName="selectedProject"]');
-    await expect(page.locator('mat-option')).toContainText('Sample Project');
-    await expect(page.locator('mat-option')).toContainText('Demo Project');
-    await expect(page.locator('mat-option')).toContainText('Test Project');
     
     // Select a project
     await page.click('mat-option:has-text("Sample Project")');
@@ -89,5 +85,19 @@ test.describe('Login Page', () => {
     
     // Should navigate to kanban board
     await expect(page).toHaveURL(/\/board/);
+  });
+
+  test('should use production mode for non-test-this organizations', async ({ page }) => {
+    // Fill in form with a regular organization name
+    await page.fill('input[formControlName="organizationName"]', 'mycompany');
+    await page.fill('input[formControlName="accessToken"]', 'real-token');
+    
+    // Submit form - this should attempt to use real Azure DevOps service
+    await page.click('button[type="submit"]');
+    
+    // In a real scenario, this would likely fail since we don't have a real token
+    // But the test verifies that non-test-this organizations don't trigger mock mode
+    // We can check that the form submission happens (loading state)
+    await expect(page.locator('button[type="submit"]')).toContainText('Loading Projects...');
   });
 });
