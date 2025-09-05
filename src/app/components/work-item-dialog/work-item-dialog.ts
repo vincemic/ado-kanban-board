@@ -8,13 +8,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 
-import { WorkItem, WorkItemState } from '../../models/work-item.model';
+import { WorkItem, WorkItemState, Team, AreaPath } from '../../models/work-item.model';
 import { AzureDevOpsService } from '../../services/azure-devops.service';
 import { AzureDevOpsServiceFactory } from '../../services/azure-devops-service-factory.service';
 
 export interface WorkItemDialogData {
   workItem?: WorkItem;
   availableStates: WorkItemState[];
+  availableTeams?: Team[];
+  availableAreaPaths?: AreaPath[];
 }
 
 @Component({
@@ -37,6 +39,8 @@ export class WorkItemDialog implements OnInit {
   isEdit: boolean;
   isLoading = false;
   availableStates: WorkItemState[];
+  availableTeams: Team[];
+  availableAreaPaths: AreaPath[];
   private azureDevOpsService: AzureDevOpsService | any;
 
   constructor(
@@ -48,6 +52,8 @@ export class WorkItemDialog implements OnInit {
     this.azureDevOpsService = this.serviceFactory.getService();
     this.isEdit = !!data.workItem;
     this.availableStates = data.availableStates;
+    this.availableTeams = data.availableTeams || [];
+    this.availableAreaPaths = data.availableAreaPaths || [];
 
     this.workItemForm = this.fb.group({
       title: [data.workItem?.title || '', Validators.required],
@@ -56,7 +62,8 @@ export class WorkItemDialog implements OnInit {
       assignedTo: [data.workItem?.assignedTo || ''],
       state: [data.workItem?.state || 'New'],
       priority: [data.workItem?.priority || 3],
-      tags: [data.workItem?.tags?.join(';') || '']
+      tags: [data.workItem?.tags?.join(';') || ''],
+      areaPath: [data.workItem?.areaPath || 'Default']
     });
   }
 
@@ -78,7 +85,8 @@ export class WorkItemDialog implements OnInit {
         description: formValue.description,
         assignedTo: formValue.assignedTo,
         priority: formValue.priority,
-        tags: formValue.tags ? formValue.tags.split(';').map((tag: string) => tag.trim()).filter((tag: string) => tag) : []
+        tags: formValue.tags ? formValue.tags.split(';').map((tag: string) => tag.trim()).filter((tag: string) => tag) : [],
+        areaPath: formValue.areaPath
       };
 
       if (this.isEdit && this.data.workItem) {

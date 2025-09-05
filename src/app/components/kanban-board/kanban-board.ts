@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -8,24 +8,30 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialog } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
 
 import { AuthService } from '../../services/auth.service';
 import { AzureDevOpsService } from '../../services/azure-devops.service';
 import { AzureDevOpsServiceFactory } from '../../services/azure-devops-service-factory.service';
-import { WorkItem, WorkItemState } from '../../models/work-item.model';
+import { WorkItem, WorkItemState, Team, AreaPath } from '../../models/work-item.model';
 import { WorkItemDialog } from '../work-item-dialog/work-item-dialog';
 
 @Component({
   selector: 'app-kanban-board',
   imports: [
     CommonModule,
+    FormsModule,
     DragDropModule,
     MatButtonModule,
     MatIconModule,
     MatCardModule,
     MatProgressSpinnerModule,
-    MatChipsModule
+    MatChipsModule,
+    MatSelectModule,
+    MatFormFieldModule
   ],
   templateUrl: './kanban-board.html',
   styleUrl: './kanban-board.scss'
@@ -33,9 +39,48 @@ import { WorkItemDialog } from '../work-item-dialog/work-item-dialog';
 export class KanbanBoard implements OnInit, OnDestroy {
   workItems: WorkItem[] = [];
   workItemStates: WorkItemState[] = [];
+  teams: Team[] = [];
+  areaPaths: AreaPath[] = [];
   projectName = '';
   isLoading = true;
   errorMessage = '';
+  
+  // Team filtering
+  selectedTeam = signal<string>('all');
+  
+  // Computed filtered work items
+  filteredWorkItems = computed(() => {
+    if (this.selectedTeam() === 'all') {
+      return this.workItems;
+    }
+    
+    // Find the selected team by name and get its area paths
+    const selectedTeam = this.teams.find(team => team.name === this.selectedTeam());
+    if (!selectedTeam) {
+      return this.workItems;
+    }
+    
+    // Filter work items by area paths that belong to the selected team
+    return this.workItems.filter(item => {
+      if (!item.areaPath) {
+        return false;
+      }
+      
+      // Check if the work item's area path matches any of the team's area paths
+      // This includes checking for exact matches and child paths if includeChildren is true
+      return selectedTeam.areaPaths.some(teamAreaPath => {
+        // Exact match
+        if (item.areaPath === teamAreaPath) {
+          return true;
+        }
+        
+        // Check if work item area path is a child of team area path
+        // This happens when a team has includeChildren=true for an area
+        return item.areaPath?.startsWith(teamAreaPath + '\\');
+      });
+    });
+  });
+  
   private azureDevOpsService: AzureDevOpsService | any;
   
   private destroy$ = new Subject<void>();
@@ -76,6 +121,18 @@ export class KanbanBoard implements OnInit, OnDestroy {
         this.workItemStates = states;
       });
 
+    this.azureDevOpsService.teams$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((teams: Team[]) => {
+        this.teams = teams;
+      });
+
+    this.azureDevOpsService.areaPaths$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((areaPaths: AreaPath[]) => {
+        this.areaPaths = areaPaths;
+      });
+
     // Load initial data
     this.refreshBoard();
   }
@@ -86,7 +143,11 @@ export class KanbanBoard implements OnInit, OnDestroy {
   }
 
   getWorkItemsForState(stateName: string): WorkItem[] {
-    return this.workItems.filter(item => item.state === stateName);
+    return this.filteredWorkItems().filter(item => item.state === stateName);
+  }
+
+  onTeamFilterChange(teamName: string): void {
+    this.selectedTeam.set(teamName);
   }
 
   onWorkItemDrop(event: CdkDragDrop<WorkItem[]>): void {
@@ -143,13 +204,17 @@ export class KanbanBoard implements OnInit, OnDestroy {
     this.errorMessage = '';
     this.azureDevOpsService.loadWorkItems();
     this.azureDevOpsService.loadWorkItemStates();
+    this.azureDevOpsService.loadTeams();
+    this.azureDevOpsService.loadAreaPaths();
   }
 
   createWorkItem(): void {
     const dialogRef = this.dialog.open(WorkItemDialog, {
       width: '600px',
       data: {
-        availableStates: this.workItemStates
+        availableStates: this.workItemStates,
+        availableTeams: this.teams,
+        availableAreaPaths: this.areaPaths
       }
     });
 
@@ -166,7 +231,9 @@ export class KanbanBoard implements OnInit, OnDestroy {
       width: '600px',
       data: {
         workItem: workItem,
-        availableStates: this.workItemStates
+        availableStates: this.workItemStates,
+        availableTeams: this.teams,
+        availableAreaPaths: this.areaPaths
       }
     });
 

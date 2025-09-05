@@ -7,6 +7,7 @@ export interface WorkItem {
   workItemType: string;
   priority?: number;
   tags?: string[];
+  areaPath?: string;
   createdDate?: Date;
   changedDate?: Date;
   url?: string;
@@ -37,4 +38,34 @@ export interface AzureDevOpsProject {
   url?: string;
   state?: string;
   visibility?: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description?: string;
+  url?: string;
+  areaPaths: string[];
+}
+
+export interface TeamFieldValue {
+  value: string;
+  includeChildren: boolean;
+}
+
+export interface TeamFieldValues {
+  field: {
+    referenceName: string;
+    url: string;
+  };
+  defaultValue: string;
+  values: TeamFieldValue[];
+  url: string;
+}
+
+export interface AreaPath {
+  name: string;
+  path: string;
+  hasChildren?: boolean;
+  children?: AreaPath[];
 }

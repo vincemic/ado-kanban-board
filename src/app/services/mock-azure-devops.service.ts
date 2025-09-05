@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, BehaviorSubject, throwError } from 'rxjs';
 import { delay, map } from 'rxjs/operators';
-import { WorkItem, WorkItemState, WorkItemType, AzureDevOpsConnection, AzureDevOpsProject } from '../models/work-item.model';
+import { WorkItem, WorkItemState, WorkItemType, AzureDevOpsConnection, AzureDevOpsProject, Team, AreaPath, TeamFieldValues } from '../models/work-item.model';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +16,52 @@ export class MockAzureDevOpsService {
   private workItemStatesSubject = new BehaviorSubject<WorkItemState[]>([]);
   public workItemStates$ = this.workItemStatesSubject.asObservable();
 
+  private teamsSubject = new BehaviorSubject<Team[]>([]);
+  public teams$ = this.teamsSubject.asObservable();
+
+  private areaPathsSubject = new BehaviorSubject<AreaPath[]>([]);
+  public areaPaths$ = this.areaPathsSubject.asObservable();
+
   // Mock data
+  private mockTeams: Team[] = [
+    {
+      id: 'team-frontend',
+      name: 'Frontend Team',
+      description: 'Responsible for UI/UX development',
+      areaPaths: ['Sample Project\\Frontend', 'Sample Project\\UI']
+    },
+    {
+      id: 'team-backend',
+      name: 'Backend Team',
+      description: 'Responsible for API and database development',
+      areaPaths: ['Sample Project\\Backend', 'Sample Project\\API']
+    },
+    {
+      id: 'team-devops',
+      name: 'DevOps Team',
+      description: 'Responsible for infrastructure and deployment',
+      areaPaths: ['Sample Project\\DevOps', 'Sample Project\\Infrastructure']
+    },
+    {
+      id: 'team-qa',
+      name: 'QA Team',
+      description: 'Responsible for testing and quality assurance',
+      areaPaths: ['Sample Project\\QA', 'Sample Project\\Testing']
+    }
+  ];
+
+  private mockAreaPaths: AreaPath[] = [
+    { name: 'Sample Project', path: 'Sample Project', hasChildren: true },
+    { name: 'Frontend', path: 'Sample Project\\Frontend', hasChildren: false },
+    { name: 'UI', path: 'Sample Project\\UI', hasChildren: false },
+    { name: 'Backend', path: 'Sample Project\\Backend', hasChildren: false },
+    { name: 'API', path: 'Sample Project\\API', hasChildren: false },
+    { name: 'DevOps', path: 'Sample Project\\DevOps', hasChildren: false },
+    { name: 'Infrastructure', path: 'Sample Project\\Infrastructure', hasChildren: false },
+    { name: 'QA', path: 'Sample Project\\QA', hasChildren: false },
+    { name: 'Testing', path: 'Sample Project\\Testing', hasChildren: false }
+  ];
+
   private mockProjects: AzureDevOpsProject[] = [
     {
       id: '12345678-1234-1234-1234-123456789012',
@@ -51,6 +96,7 @@ export class MockAzureDevOpsService {
       workItemType: 'User Story',
       priority: 1,
       tags: ['authentication', 'security'],
+      areaPath: 'Sample Project\\Frontend',
       createdDate: new Date('2024-01-15'),
       changedDate: new Date('2024-01-16'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/1'
@@ -64,6 +110,7 @@ export class MockAzureDevOpsService {
       workItemType: 'Task',
       priority: 2,
       tags: ['database', 'schema'],
+      areaPath: 'Sample Project\\Backend',
       createdDate: new Date('2024-01-16'),
       changedDate: new Date('2024-01-17'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/2'
@@ -77,6 +124,7 @@ export class MockAzureDevOpsService {
       workItemType: 'Task',
       priority: 2,
       tags: ['api', 'backend'],
+      areaPath: 'Sample Project\\API',
       createdDate: new Date('2024-01-17'),
       changedDate: new Date('2024-01-18'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/3'
@@ -90,6 +138,7 @@ export class MockAzureDevOpsService {
       workItemType: 'Task',
       priority: 3,
       tags: ['devops', 'pipeline'],
+      areaPath: 'Sample Project\\DevOps',
       createdDate: new Date('2024-01-18'),
       changedDate: new Date('2024-01-20'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/4'
@@ -103,6 +152,7 @@ export class MockAzureDevOpsService {
       workItemType: 'Task',
       priority: 3,
       tags: ['testing', 'quality'],
+      areaPath: 'Sample Project\\QA',
       createdDate: new Date('2024-01-19'),
       changedDate: new Date('2024-01-21'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/5'
@@ -116,6 +166,7 @@ export class MockAzureDevOpsService {
       workItemType: 'User Story',
       priority: 2,
       tags: ['ui', 'design'],
+      areaPath: 'Sample Project\\UI',
       createdDate: new Date('2024-01-20'),
       changedDate: new Date('2024-01-20'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/6'
@@ -129,6 +180,7 @@ export class MockAzureDevOpsService {
       workItemType: 'Bug',
       priority: 1,
       tags: ['performance', 'optimization'],
+      areaPath: 'Sample Project\\Frontend',
       createdDate: new Date('2024-01-21'),
       changedDate: new Date('2024-01-22'),
       url: 'https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/7'
@@ -148,6 +200,8 @@ export class MockAzureDevOpsService {
     this.connectionSubject.next(connection);
     this.loadWorkItemStates();
     this.loadWorkItems();
+    this.loadTeams();
+    this.loadAreaPaths();
   }
 
   getCurrentConnection(): AzureDevOpsConnection | null {
@@ -171,6 +225,28 @@ export class MockAzureDevOpsService {
     setTimeout(() => {
       this.workItemStatesSubject.next([...this.mockStates]);
     }, 300);
+  }
+
+  loadTeams(): void {
+    // Simulate loading delay
+    setTimeout(() => {
+      this.teamsSubject.next([...this.mockTeams]);
+    }, 200);
+  }
+
+  getTeams(): Observable<Team[]> {
+    return of([...this.mockTeams]).pipe(delay(200));
+  }
+
+  loadAreaPaths(): void {
+    // Simulate loading delay
+    setTimeout(() => {
+      this.areaPathsSubject.next([...this.mockAreaPaths]);
+    }, 200);
+  }
+
+  getAreaPaths(): Observable<AreaPath[]> {
+    return of([...this.mockAreaPaths]).pipe(delay(200));
   }
 
   updateWorkItemState(workItemId: number, newState: string): Observable<WorkItem> {
@@ -201,6 +277,7 @@ export class MockAzureDevOpsService {
       workItemType: workItem.workItemType || 'Task',
       priority: workItem.priority || 2,
       tags: workItem.tags || [],
+      areaPath: workItem.areaPath || 'Sample Project\\Frontend',
       createdDate: new Date(),
       changedDate: new Date(),
       url: `https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/${newId}`
@@ -220,6 +297,7 @@ export class MockAzureDevOpsService {
   resetMockData(): void {
     this.workItemsSubject.next([]);
     this.workItemStatesSubject.next([]);
+    this.teamsSubject.next([]);
     this.connectionSubject.next(null);
   }
 
@@ -235,6 +313,7 @@ export class MockAzureDevOpsService {
       workItemType: workItem.workItemType || 'Task',
       priority: workItem.priority || 2,
       tags: workItem.tags || ['mock'],
+      areaPath: workItem.areaPath || 'Sample Project\\Frontend',
       createdDate: new Date(),
       changedDate: new Date(),
       url: `https://dev.azure.com/mockorg/Sample%20Project/_workitems/edit/${newId}`

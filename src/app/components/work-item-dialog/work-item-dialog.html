@@ -40,6 +40,16 @@
              placeholder="Enter assignee name or email">
     </mat-form-field>
 
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Area Path</mat-label>
+      <mat-select formControlName="areaPath">
+        <mat-option value="Default">Default</mat-option>
+        <mat-option *ngFor="let areaPath of availableAreaPaths" [value]="areaPath.path">
+          {{ areaPath.path }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
     <mat-form-field appearance="outline" class="full-width" *ngIf="isEdit">
       <mat-label>State</mat-label>
       <mat-select formControlName="state">
