@@ -3,9 +3,8 @@ import { test, expect } from '@playwright/test';
 // Use mock authentication and data for kanban board tests
 test.describe('Kanban Board', () => {
   test.beforeEach(async ({ page }) => {
-    // Enable mock mode and set up authenticated state
+    // Set up authenticated state for tests
     await page.addInitScript(() => {
-      localStorage.setItem('useMockServices', 'true');
       localStorage.setItem('azureDevOpsConnection', JSON.stringify({
         organizationUrl: 'https://dev.azure.com/testorg',
         projectName: 'Sample Project',

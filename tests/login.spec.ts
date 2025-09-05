@@ -22,9 +22,12 @@ test.describe('Login Page', () => {
     await expect(submitButton).toBeDisabled();
   });
 
-  test('should automatically enable mock mode for test-this organization', async ({ page }) => {
-    // Fill in organization name as "test-this" to trigger mock mode
-    await page.fill('input[formControlName="organizationName"]', 'test-this');
+  test('should automatically enable mock mode with query parameter', async ({ page }) => {
+    // Navigate with mock mode enabled via query parameter - directly to login page
+    await page.goto('/login?mock=true');
+    
+    // Fill in any organization name and token (they will be ignored in mock mode)
+    await page.fill('input[formControlName="organizationName"]', 'anyorg');
     await page.fill('input[formControlName="accessToken"]', 'test-token');
     
     // Submit form
@@ -63,9 +66,12 @@ test.describe('Login Page', () => {
     await expect(submitButton).not.toBeDisabled();
   });
 
-  test('should complete mock login flow with test-this organization', async ({ page }) => {
-    // Fill in form with "test-this" to trigger mock mode
-    await page.fill('input[formControlName="organizationName"]', 'test-this');
+  test('should complete mock login flow with query parameter', async ({ page }) => {
+    // Navigate with mock mode enabled via query parameter - directly to login page
+    await page.goto('/login?mock=true');
+    
+    // Fill in form with any organization name (mock mode ignores credentials)
+    await page.fill('input[formControlName="organizationName"]', 'myorg');
     await page.fill('input[formControlName="accessToken"]', 'fake-token');
     
     // Submit form
@@ -87,8 +93,8 @@ test.describe('Login Page', () => {
     await expect(page).toHaveURL(/\/board/);
   });
 
-  test('should use production mode for non-test-this organizations', async ({ page }) => {
-    // Fill in form with a regular organization name
+  test('should use production mode without query parameter', async ({ page }) => {
+    // Fill in form with a regular organization name (no mock query parameter)
     await page.fill('input[formControlName="organizationName"]', 'mycompany');
     await page.fill('input[formControlName="accessToken"]', 'real-token');
     
@@ -96,7 +102,6 @@ test.describe('Login Page', () => {
     await page.click('button[type="submit"]');
     
     // In a real scenario, this would likely fail since we don't have a real token
-    // But the test verifies that non-test-this organizations don't trigger mock mode
     // We can check that the form submission happens (loading state)
     await expect(page.locator('button[type="submit"]')).toContainText('Loading Projects...');
   });

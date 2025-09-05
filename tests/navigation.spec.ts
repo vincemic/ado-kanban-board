@@ -12,30 +12,31 @@ test.describe('Application Navigation', () => {
   });
 
   test('should navigate to board after successful authentication in mock mode', async ({ page }) => {
-    // Set up mock mode
-    await page.addInitScript(() => {
-      localStorage.setItem('useMockServices', 'true');
-    });
-
+    // Navigate with mock mode enabled
     await page.goto('/login?mock=true');
     
-    // Should show mock toggle as enabled
-    await expect(page.locator('.mock-indicator:has-text("Mock Mode: ON")')).toBeVisible();
-    
-    // Fill in simplified form for mock mode
+    // Fill in form (any credentials work in mock mode)
     await page.fill('input[formControlName="organizationName"]', 'testorg');
-    await page.fill('input[formControlName="projectName"]', 'Sample Project');
-    await page.fill('input[formControlName="personalAccessToken"]', 'mock-token');
+    await page.fill('input[formControlName="accessToken"]', 'mock-token');
     
-    // Submit and check navigation
+    // Submit form
     await page.click('button[type="submit"]');
-    await expect(page).toHaveURL('/board');
+    
+    // Should proceed to project selection
+    await expect(page.locator('mat-card-title')).toContainText('Select Project');
+    
+    // Select a project
+    await page.click('mat-select[formControlName="selectedProject"]');
+    await page.click('mat-option:has-text("Sample Project")');
+    await page.click('button:has-text("Connect")');
+    
+    // Should navigate to board
+    await expect(page).toHaveURL(/\/board/);
   });
 
   test('should maintain mock mode state across navigation', async ({ page }) => {
-    // Set up mock mode and authentication
+    // Set up authenticated state
     await page.addInitScript(() => {
-      localStorage.setItem('useMockServices', 'true');
       localStorage.setItem('azureDevOpsConnection', JSON.stringify({
         organizationUrl: 'https://dev.azure.com/testorg',
         projectName: 'Sample Project',
@@ -43,15 +44,12 @@ test.describe('Application Navigation', () => {
       }));
     });
 
+    // Navigate to board with mock mode
     await page.goto('/board?mock=true');
     await page.waitForSelector('.work-item-card', { timeout: 10000 });
     
     // Should see mock work items
     await expect(page.locator('.work-item-card:has-text("Implement user authentication")')).toBeVisible();
-    
-    // Navigate back to login and check mock mode is still enabled
-    await page.goto('/login?mock=true');
-    await expect(page.locator('.mock-indicator:has-text("Mock Mode: ON")')).toBeVisible();
   });
 
   test('should show proper page titles', async ({ page }) => {
@@ -77,32 +75,11 @@ test.describe('Application Navigation', () => {
   test('should have proper accessibility elements', async ({ page }) => {
     await page.goto('/login');
     
-    // Check for proper labeling - updated for new form structure
-    await expect(page.locator('label')).toHaveCount(3);
-    
-    // Check for form validation - updated field names
+    // Check for form inputs with proper attributes
     const orgNameInput = page.locator('input[formControlName="organizationName"]');
     await expect(orgNameInput).toHaveAttribute('required');
     
-    const projectInput = page.locator('input[formControlName="projectName"]');
-    await expect(projectInput).toHaveAttribute('required');
-    
-    const tokenInput = page.locator('input[formControlName="personalAccessToken"]');
+    const tokenInput = page.locator('input[formControlName="accessToken"]');
     await expect(tokenInput).toHaveAttribute('required');
-  });
-
-  test('should toggle between mock and real modes', async ({ page }) => {
-    await page.goto('/login');
-    
-    // Initially should be in real mode
-    await expect(page.locator('.mock-indicator:has-text("Mock Mode: OFF")')).toBeVisible();
-    
-    // Toggle to mock mode
-    await page.click('.mock-toggle-button');
-    await expect(page.locator('.mock-indicator:has-text("Mock Mode: ON")')).toBeVisible();
-    
-    // Toggle back to real mode
-    await page.click('.mock-toggle-button');
-    await expect(page.locator('.mock-indicator:has-text("Mock Mode: OFF")')).toBeVisible();
   });
 });

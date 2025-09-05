@@ -64,7 +64,7 @@ ng serve
 
 The application includes a mock mode for testing purposes:
 
-- **URL Parameter**: Add `?mock=true` to the URL to enable mock mode
+- **URL Parameter**: Add `?mock=true` to any URL to enable mock mode (e.g., `http://localhost:4200/login?mock=true`)
 - **Toggle Button**: Use the toggle button on the login page to switch between real and mock modes
 - **Sample Data**: Mock mode provides realistic sample work items and projects
 - **Local Storage**: Your mock mode preference is saved locally
@@ -74,6 +74,8 @@ Mock mode is perfect for:
 - Demonstrating functionality
 - Development and debugging
 - E2E testing
+
+**Note**: Query parameters are preserved when navigating directly to specific pages (e.g., `/login?mock=true`, `/board?mock=true`)
 
 ## Quick Testing
 

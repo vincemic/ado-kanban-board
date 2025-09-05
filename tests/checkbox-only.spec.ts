@@ -28,8 +28,11 @@ test.describe('Remember Checkbox - Core Functionality', () => {
   });
 
   test('checking remember saves credentials after successful login', async ({ page }) => {
+    // Navigate with mock mode enabled
+    await page.goto('/login?mock=true');
+    
     // Fill form and check remember
-    await page.fill('input[formControlName="organizationName"]', 'test-this');
+    await page.fill('input[formControlName="organizationName"]', 'myorg');
     await page.fill('input[formControlName="accessToken"]', 'test-token');
     await page.locator('mat-checkbox[formControlName="rememberThis"]').click();
     
@@ -45,7 +48,7 @@ test.describe('Remember Checkbox - Core Functionality', () => {
     expect(credentials).toBeTruthy();
     
     const parsed = JSON.parse(credentials!);
-    expect(parsed.organizationName).toBe('test-this');
+    expect(parsed.organizationName).toBe('myorg');
     expect(parsed.accessToken).toBe('test-token');
   });
 

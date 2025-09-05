@@ -2,9 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Drag and Drop Functionality', () => {
   test.beforeEach(async ({ page }) => {
-    // Enable mock mode and set up authenticated state
+    // Set up authenticated state for tests
     await page.addInitScript(() => {
-      localStorage.setItem('useMockServices', 'true');
       localStorage.setItem('azureDevOpsConnection', JSON.stringify({
         organizationUrl: 'https://dev.azure.com/testorg',
         projectName: 'Sample Project',
@@ -78,7 +77,7 @@ test.describe('Drag and Drop Functionality', () => {
   });
 
   test('should handle keyboard navigation', async ({ page }) => {
-    await page.goto('/kanban');
+    await page.goto('/board?mock=true');
     await page.waitForSelector('.work-item-card');
     
     // Focus on first work item
@@ -93,7 +92,7 @@ test.describe('Drag and Drop Functionality', () => {
   });
 
   test('should be accessible with screen readers', async ({ page }) => {
-    await page.goto('/kanban');
+    await page.goto('/board?mock=true');
     await page.waitForSelector('.work-item-card');
     
     // Check for proper ARIA labels
@@ -105,7 +104,7 @@ test.describe('Drag and Drop Functionality', () => {
   });
 
   test('should work on touch devices', async ({ page }) => {
-    await page.goto('/kanban');
+    await page.goto('/board?mock=true');
     await page.waitForSelector('.work-item-card');
     
     // Simulate touch interactions

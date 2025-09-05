@@ -5,33 +5,49 @@ import { Injectable } from '@angular/core';
 })
 export class AppConfigService {
   private _useMockServices = false;
+  private mockModeChecked = false;
 
   constructor() {
-    // Check for mock mode from environment variables, localStorage, or URL params
+    // Check for mock mode immediately on service creation
     this.initializeMockMode();
   }
 
   private initializeMockMode(): void {
-    // Check URL parameters for mock mode
+    if (this.mockModeChecked) return;
+    
+    // Check window.location.search for mock parameter
+    // This needs to be done before any router redirects
     const urlParams = new URLSearchParams(window.location.search);
     const mockParam = urlParams.get('mock');
     
-    // Check localStorage for persistent mock mode setting
-    const storedMockMode = localStorage.getItem('useMockServices');
+    console.log('AppConfigService initialization:');
+    console.log('Window location href:', window.location.href);
+    console.log('Window location search:', window.location.search);
+    console.log('Mock param from URL:', mockParam);
     
-    if (mockParam !== null) {
-      this._useMockServices = mockParam === 'true';
-      // Store the setting for persistence
-      localStorage.setItem('useMockServices', this._useMockServices.toString());
-    } else if (storedMockMode !== null) {
-      this._useMockServices = storedMockMode === 'true';
+    if (mockParam === 'true') {
+      this._useMockServices = true;
+      localStorage.setItem('useMockServices', 'true');
+      console.log('Mock mode enabled via query parameter');
+    } else {
+      // Check localStorage for persistent mock mode setting
+      const storedMockMode = localStorage.getItem('useMockServices');
+      if (storedMockMode === 'true') {
+        this._useMockServices = true;
+        console.log('Mock mode enabled from stored preference');
+      } else {
+        this._useMockServices = false;
+        console.log('Mock mode disabled');
+      }
     }
     
-    // Default to production mode (false) regardless of environment
-    // Mock mode will be automatically enabled when organization name is "test-this"
+    this.mockModeChecked = true;
   }
 
   get useMockServices(): boolean {
+    console.log('AppConfigService.useMockServices called');
+    console.log('Current _useMockServices:', this._useMockServices);
+    console.log('Returning useMockServices:', this._useMockServices);
     return this._useMockServices;
   }
 

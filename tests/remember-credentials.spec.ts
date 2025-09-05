@@ -42,7 +42,10 @@ test.describe('Remember Credentials Checkbox', () => {
   });
 
   test('should save credentials to localStorage when remember is checked and login succeeds', async ({ page }) => {
-    const organizationName = 'test-this';
+    // Navigate with mock mode enabled
+    await page.goto('/login?mock=true');
+    
+    const organizationName = 'myorg';
     const accessToken = 'test-token';
     
     // Fill in credentials
@@ -90,8 +93,11 @@ test.describe('Remember Credentials Checkbox', () => {
   });
 
   test('should NOT save credentials when remember is unchecked', async ({ page }) => {
+    // Navigate with mock mode enabled
+    await page.goto('/login?mock=true');
+    
     // Fill in credentials but don't check remember
-    await page.fill('input[formControlName="organizationName"]', 'test-this');
+    await page.fill('input[formControlName="organizationName"]', 'myorg');
     await page.fill('input[formControlName="accessToken"]', 'test-token');
     
     // Ensure remember checkbox is unchecked
@@ -215,8 +221,11 @@ test.describe('Remember Credentials Checkbox', () => {
   });
 
   test('should preserve remember checkbox state when going back from project selection', async ({ page }) => {
+    // Navigate with mock mode enabled
+    await page.goto('/login?mock=true');
+    
     // Fill form and check remember
-    await page.fill('input[formControlName="organizationName"]', 'test-this');
+    await page.fill('input[formControlName="organizationName"]', 'myorg');
     await page.fill('input[formControlName="accessToken"]', 'test-token');
     await page.locator('mat-checkbox[formControlName="rememberThis"]').click();
     
@@ -231,7 +240,7 @@ test.describe('Remember Credentials Checkbox', () => {
     await expect(page.locator('mat-checkbox[formControlName="rememberThis"] input[type="checkbox"]')).toBeChecked();
     
     // Form values should still be there
-    await expect(page.locator('input[formControlName="organizationName"]')).toHaveValue('test-this');
+    await expect(page.locator('input[formControlName="organizationName"]')).toHaveValue('myorg');
     await expect(page.locator('input[formControlName="accessToken"]')).toHaveValue('test-token');
   });
 });

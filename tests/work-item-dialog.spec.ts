@@ -2,9 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Work Item Dialog', () => {
   test.beforeEach(async ({ page }) => {
-    // Enable mock mode and set up authenticated state
+    // Set up authenticated state for tests
     await page.addInitScript(() => {
-      localStorage.setItem('useMockServices', 'true');
       localStorage.setItem('azureDevOpsConnection', JSON.stringify({
         organizationUrl: 'https://dev.azure.com/testorg',
         projectName: 'Sample Project',

@@ -98,18 +98,20 @@ export class Login implements OnInit {
       this.organizationUrl = `https://dev.azure.com/${organizationName}`;
       this.accessToken = this.loginForm.value.accessToken;
 
-      // Check if organization name is "test-this" and enable mock mode
-      if (organizationName === 'test-this') {
-        this.config.setMockMode(true);
-        this.azureDevOpsService = this.serviceFactory.getService();
-      } else {
-        this.config.setMockMode(false);
-        this.azureDevOpsService = this.serviceFactory.getService();
-      }
+      console.log('Form submitted with organization:', organizationName);
+      console.log('Mock mode enabled:', this.config.useMockServices);
+      console.log('Current service type:', this.serviceFactory.getCurrentServiceType());
+
+      // Mock mode is determined by query parameter in URL, not by organization name
+      // Get the current service based on mock mode setting
+      this.azureDevOpsService = this.serviceFactory.getService();
+
+      console.log('Using service:', this.azureDevOpsService.constructor.name);
 
       // First, fetch available projects
       this.azureDevOpsService.getProjects(this.organizationUrl, this.accessToken).subscribe({
         next: (projects: AzureDevOpsProject[]) => {
+          console.log('Received projects:', projects);
           this.availableProjects = projects;
           this.showProjectSelection = true;
           this.isLoading = false;
@@ -131,7 +133,7 @@ export class Login implements OnInit {
           } else if (error.status === 404) {
             this.errorMessage = 'Organization not found. Please check the organization name and try again.';
           } else {
-            this.errorMessage = `Error connecting to Azure DevOps: ${error.message || 'Unknown error'}. Try using "test-this" as organization name for demo mode.`;
+            this.errorMessage = `Error connecting to Azure DevOps: ${error.message || 'Unknown error'}. Add "?mock=true" to the URL for demo mode.`;
           }
           
           console.log('Setting error message to:', this.errorMessage);
