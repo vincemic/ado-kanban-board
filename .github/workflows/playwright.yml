@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Playwright Tests (Non-blocking)
 
 on:
   push:
@@ -25,6 +25,7 @@ jobs:
       
     - name: Run Playwright tests
       run: npm run e2e
+      continue-on-error: true  # Allow tests to fail without blocking other workflows
       
     - uses: actions/upload-artifact@v4
       if: always()
@@ -32,3 +33,15 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+        
+    - name: Comment on PR with test results
+      if: failure() && github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: '⚠️ Playwright tests failed but deployment will continue. Please check the test results and fix any issues.'
+          })

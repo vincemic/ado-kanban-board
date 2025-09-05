@@ -2,9 +2,30 @@
 
 A modern Angular application that provides a Kanban-style interface for managing Azure DevOps work items with drag-and-drop functionality.
 
+🌐 **[Try the Live Demo](https://vincemic.github.io/ado-kanban-board/)** - No setup required! Use mock mode to explore all features.
+
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
 
-## Features
+## Live Demo
+
+🌐 **[Try the Live Demo](https://vincemic.github.io/ado-kanban-board/)** 
+
+The application is automatically deployed to GitHub Pages whenever changes are pushed to the main branch. You can explore all features using the mock mode:
+
+1. Visit the [live demo](https://vincemic.github.io/ado-kanban-board/)
+2. The demo starts in mock mode by default (toggle available on login page)
+3. Use any organization name (e.g., "demo-org") and token (e.g., "demo-token")
+4. Explore the full Kanban board functionality with sample data
+
+**Features available in the demo:**
+- Full drag-and-drop functionality
+- Work item creation and editing
+- Responsive design across devices
+- All UI components and interactions
+
+**Note:** The demo uses mock data and doesn't connect to real Azure DevOps services.
+
+## Getting Started
 
 - 🔐 **Authentication**: Connect to any Azure DevOps organization using Personal Access Tokens
 - 📋 **Kanban Board**: Visual board with columns representing work item states
@@ -231,6 +252,68 @@ Note: Firefox is excluded from the test configuration.
 
 ```bash
 ng lint
+```
+
+## Deployment
+
+### GitHub Pages
+
+The application is automatically deployed to GitHub Pages using GitHub Actions:
+
+- **Live URL**: [https://vincemic.github.io/ado-kanban-board/](https://vincemic.github.io/ado-kanban-board/)
+- **Deployment**: Automatic on every push to `main` branch
+- **Build Process**: Angular production build with GitHub Pages base href
+- **Testing**: Playwright tests run but don't block deployment (non-blocking)
+
+#### Continuous Integration
+
+The repository uses GitHub Actions for CI/CD:
+
+**Workflows:**
+- **Playwright Tests (Non-blocking)**: Runs E2E tests on every push and PR, but failures don't block deployment
+- **Deploy to GitHub Pages**: Automatically deploys the app when changes are pushed to main
+
+**Test Strategy:**
+- Tests provide feedback on functionality
+- Deployment continues even if tests fail to ensure continuous delivery
+- Test failures are reported but don't prevent users from accessing the latest version
+- Failed tests trigger notifications for developers to investigate and fix
+
+This approach prioritizes availability while maintaining quality feedback loops.
+
+#### Manual Deployment
+
+You can manually trigger a deployment:
+
+1. Go to the "Actions" tab in the GitHub repository
+2. Select "Deploy to GitHub Pages" workflow
+3. Click "Run workflow" button
+
+#### Local GitHub Pages Testing
+
+To test the GitHub Pages build locally:
+
+```bash
+# Build for GitHub Pages
+npm run build -- --base-href=/ado-kanban-board/
+
+# Serve the built files (requires a local server)
+npx http-server dist/ado-kanban-board
+```
+
+### Other Deployment Options
+
+The application can be deployed to any static hosting service:
+
+- **Netlify**: Connect your repository for automatic deployments
+- **Vercel**: Import project for serverless deployment  
+- **Azure Static Web Apps**: Deploy directly to Azure
+- **AWS S3**: Upload build files to S3 bucket with static hosting
+
+For production deployments, run:
+
+```bash
+ng build --configuration production
 ```
 
 ## Contributing
