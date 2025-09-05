@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Edit Work Item' : 'Create Work Item' }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="workItemForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" placeholder="Enter work item title" required>
+      <mat-error *ngIf="workItemForm.get('title')?.errors?.['required']">
+        Title is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Work Item Type</mat-label>
+      <mat-select formControlName="workItemType" required>
+        <mat-option value="Task">Task</mat-option>
+        <mat-option value="Bug">Bug</mat-option>
+        <mat-option value="Feature">Feature</mat-option>
+        <mat-option value="Epic">Epic</mat-option>
+        <mat-option value="User Story">User Story</mat-option>
+      </mat-select>
+      <mat-error *ngIf="workItemForm.get('workItemType')?.errors?.['required']">
+        Work item type is required
+      </mat-error>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput 
+                formControlName="description" 
+                placeholder="Enter work item description"
+                rows="4">
+      </textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Assigned To</mat-label>
+      <input matInput 
+             formControlName="assignedTo" 
+             placeholder="Enter assignee name or email">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width" *ngIf="isEdit">
+      <mat-label>State</mat-label>
+      <mat-select formControlName="state">
+        <mat-option *ngFor="let state of availableStates" [value]="state.name">
+          {{ state.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option [value]="1">1 - Critical</mat-option>
+        <mat-option [value]="2">2 - High</mat-option>
+        <mat-option [value]="3">3 - Medium</mat-option>
+        <mat-option [value]="4">4 - Low</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Tags</mat-label>
+      <input matInput 
+             formControlName="tags" 
+             placeholder="Enter tags separated by semicolons">
+      <mat-hint>Separate multiple tags with semicolons (;)</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" [disabled]="isLoading">Cancel</button>
+  <button mat-raised-button 
+          color="primary" 
+          (click)="onSave()" 
+          [disabled]="workItemForm.invalid || isLoading">
+    <mat-icon *ngIf="isLoading">refresh</mat-icon>
+    {{ isLoading ? 'Saving...' : (isEdit ? 'Update' : 'Create') }}
+  </button>
+</mat-dialog-actions>

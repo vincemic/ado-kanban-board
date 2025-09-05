@@ -1,0 +1,58 @@
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 500px;
+  margin-bottom: 2rem;
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.form-actions {
+  margin-top: 1.5rem;
+}
+
+.info-section {
+  width: 100%;
+  max-width: 500px;
+}
+
+.info-section mat-card {
+  background-color: rgba(255, 255, 255, 0.95);
+}
+
+.info-section h3 {
+  margin-top: 0;
+  color: #333;
+}
+
+.info-section ol {
+  margin: 1rem 0;
+  padding-left: 1.5rem;
+}
+
+.info-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .login-container {
+    padding: 1rem;
+  }
+  
+  .login-card,
+  .info-section {
+    max-width: 100%;
+  }
+}

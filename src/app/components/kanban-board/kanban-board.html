@@ -1,0 +1,100 @@
+<div class="kanban-container">
+  <!-- Header -->
+  <div class="kanban-header">
+    <h1>{{ projectName }} - Kanban Board</h1>
+    <div class="header-actions">
+      <button mat-raised-button color="primary" (click)="createWorkItem()">
+        <mat-icon>add</mat-icon>
+        New Work Item
+      </button>
+      <button mat-button (click)="refreshBoard()">
+        <mat-icon>refresh</mat-icon>
+        Refresh
+      </button>
+      <button mat-button (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading indicator -->
+  <div *ngIf="isLoading" class="loading-container">
+    <mat-spinner></mat-spinner>
+    <p>Loading work items...</p>
+  </div>
+
+  <!-- Kanban Board -->
+  <div *ngIf="!isLoading" class="kanban-board" cdkDropListGroup>
+    <div *ngFor="let state of workItemStates" class="kanban-column">
+      <div class="column-header">
+        <h3>{{ state.name }}</h3>
+        <span class="item-count">{{ getWorkItemsForState(state.name).length }}</span>
+      </div>
+      
+      <div class="column-content"
+           cdkDropList
+           [cdkDropListData]="getWorkItemsForState(state.name)"
+           (cdkDropListDropped)="onWorkItemDrop($event)">
+        
+        <div *ngFor="let workItem of getWorkItemsForState(state.name)" 
+             class="work-item-card"
+             cdkDrag>
+          <div class="work-item-content" *cdkDragPlaceholder>
+            <div class="work-item-placeholder"></div>
+          </div>
+          
+          <div class="work-item-content">
+            <div class="work-item-header">
+              <span class="work-item-id">#{{ workItem.id }}</span>
+              <span class="work-item-type" [class]="'type-' + workItem.workItemType.toLowerCase()">
+                {{ workItem.workItemType }}
+              </span>
+            </div>
+            
+            <div class="work-item-title" (click)="editWorkItem(workItem)">
+              {{ workItem.title }}
+            </div>
+            
+            <div class="work-item-meta" *ngIf="workItem.assignedTo">
+              <mat-icon class="assignee-icon">person</mat-icon>
+              <span class="assignee">{{ workItem.assignedTo }}</span>
+            </div>
+            
+            <div class="work-item-tags" *ngIf="workItem.tags && workItem.tags.length > 0">
+              <mat-chip-set>
+                <mat-chip *ngFor="let tag of workItem.tags">{{ tag }}</mat-chip>
+              </mat-chip-set>
+            </div>
+            
+            <div class="work-item-actions">
+              <button mat-icon-button (click)="editWorkItem(workItem)" [attr.aria-label]="'Edit work item ' + workItem.id">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteWorkItem(workItem)" [attr.aria-label]="'Delete work item ' + workItem.id">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Empty state -->
+        <div *ngIf="getWorkItemsForState(state.name).length === 0" class="empty-column">
+          <p>No items in {{ state.name }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Error message -->
+<div *ngIf="errorMessage" class="error-container">
+  <mat-card class="error-card">
+    <mat-card-content>
+      <mat-icon class="error-icon">error</mat-icon>
+      <h3>Error</h3>
+      <p>{{ errorMessage }}</p>
+      <button mat-button color="primary" (click)="clearError()">Dismiss</button>
+    </mat-card-content>
+  </mat-card>
+</div>
