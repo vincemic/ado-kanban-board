@@ -70,6 +70,29 @@
   margin-bottom: 1rem;
 }
 
+.remember-checkbox {
+  margin-bottom: 1rem;
+  
+  ::ng-deep {
+    .mdc-checkbox .mdc-checkbox__native-control:enabled:not(:checked):not(:indeterminate):not([data-indeterminate=true]) ~ .mdc-checkbox__background {
+      border-color: #569cd6 !important;
+    }
+    
+    .mdc-checkbox .mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+      background-color: #569cd6 !important;
+      border-color: #569cd6 !important;
+    }
+    
+    .mdc-form-field > label {
+      color: #cccccc !important;
+    }
+    
+    .mdc-checkbox .mdc-checkbox__native-control:enabled ~ .mdc-checkbox__background .mdc-checkbox__checkmark {
+      color: #ffffff !important;
+    }
+  }
+}
+
 // Custom Material form field styling for dark theme
 .login-card {
   ::ng-deep {

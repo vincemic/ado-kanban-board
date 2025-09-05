@@ -11,6 +11,7 @@ html {
     color: (
       primary: mat.$azure-palette,
       tertiary: mat.$blue-palette,
+      theme-type: dark, // Enable dark theme
     ),
     typography: Roboto,
     density: 0,
@@ -18,16 +19,12 @@ html {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
-  color-scheme: light;
+  // Enable dark color theme
+  color-scheme: dark;
 
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
+  // VS Code dark theme colors
+  background-color: #1e1e1e; // VS Code dark background
+  color: #cccccc; // VS Code text color
   font: var(--mat-sys-body-medium);
 
   // Reset the user agent margin.

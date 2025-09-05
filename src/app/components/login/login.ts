@@ -9,7 +9,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AuthService } from '../../services/auth.service';
+import { PreferencesService } from '../../services/preferences.service';
 import { AzureDevOpsService } from '../../services/azure-devops.service';
 import { AzureDevOpsServiceFactory } from '../../services/azure-devops-service-factory.service';
 import { AppConfigService } from '../../services/app-config.service';
@@ -26,7 +28,8 @@ import { AzureDevOpsConnection, AzureDevOpsProject } from '../../models/work-ite
     MatButtonModule,
     MatIconModule,
     MatSelectModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatCheckboxModule
   ],
   templateUrl: './login.html',
   styleUrl: './login.scss'
@@ -47,7 +50,8 @@ export class Login implements OnInit {
     private authService: AuthService,
     private serviceFactory: AzureDevOpsServiceFactory,
     private config: AppConfigService,
-    private router: Router
+    private router: Router,
+    private preferencesService: PreferencesService
   ) {
     this.azureDevOpsService = this.serviceFactory.getService();
     this.loginForm = this.fb.group({
@@ -55,7 +59,8 @@ export class Login implements OnInit {
         Validators.required,
         Validators.pattern(/^[a-zA-Z0-9][a-zA-Z0-9-_]*[a-zA-Z0-9]$|^[a-zA-Z0-9]$/)
       ]],
-      accessToken: ['', Validators.required]
+      accessToken: ['', Validators.required],
+      rememberThis: [false]
     });
 
     this.projectForm = this.fb.group({
@@ -69,9 +74,18 @@ export class Login implements OnInit {
       this.router.navigate(['/board']);
     }
     
+    // Load saved credentials if remember is enabled
+    this.loadSavedCredentials();
+    
     // Clear error message when form values change
     this.loginForm.valueChanges.subscribe(() => {
       this.errorMessage = '';
+      
+      // Clear saved credentials if remember checkbox is unchecked
+      if (!this.loginForm.value.rememberThis) {
+        this.preferencesService.clearCredentials();
+        this.preferencesService.savePreferences({ rememberCredentials: false });
+      }
     });
   }
 
@@ -140,6 +154,13 @@ export class Login implements OnInit {
       this.authService.authenticate(connection).subscribe({
         next: (success: boolean) => {
           if (success) {
+            // Save credentials if remember checkbox is checked
+            if (this.loginForm.value.rememberThis) {
+              this.saveCredentials(selectedProject);
+            } else {
+              this.preferencesService.clearCredentials();
+            }
+            
             this.azureDevOpsService.setConnection(connection);
             this.router.navigate(['/board']);
           }
@@ -160,9 +181,49 @@ export class Login implements OnInit {
     this.showProjectSelection = false;
     this.availableProjects = [];
     this.projectForm.reset();
+    // Keep the remember checkbox state when going back
+    const rememberState = this.loginForm.value.rememberThis;
+    this.loginForm.patchValue({ rememberThis: rememberState });
   }
 
   getCurrentServiceType(): string {
     return this.serviceFactory.getCurrentServiceType();
+  }
+
+  /**
+   * Load saved credentials from preferences service
+   */
+  private loadSavedCredentials(): void {
+    if (this.preferencesService.shouldRememberCredentials()) {
+      const savedCredentials = this.preferencesService.getSavedCredentials();
+      if (savedCredentials) {
+        this.loginForm.patchValue({
+          organizationName: savedCredentials.organizationName,
+          accessToken: savedCredentials.accessToken,
+          rememberThis: true
+        });
+        
+        // If we have a saved project, we could auto-populate that too
+        if (savedCredentials.projectName) {
+          this.projectForm.patchValue({
+            selectedProject: savedCredentials.projectName
+          });
+        }
+      }
+    }
+  }
+
+  /**
+   * Save credentials to preferences service
+   */
+  private saveCredentials(projectName: string): void {
+    const credentials = {
+      organizationName: this.loginForm.value.organizationName,
+      accessToken: this.loginForm.value.accessToken,
+      projectName: projectName
+    };
+    
+    this.preferencesService.saveCredentials(credentials);
+    this.preferencesService.savePreferences({ rememberCredentials: true });
   }
 }

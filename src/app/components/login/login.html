@@ -51,6 +51,10 @@
             </mat-error>
           </mat-form-field>
 
+          <mat-checkbox formControlName="rememberThis" class="remember-checkbox">
+            Remember this
+          </mat-checkbox>
+
           <div class="form-actions">
             <button mat-raised-button 
                     color="primary" 
@@ -69,7 +73,6 @@
     <div *ngIf="showProjectSelection">
       <mat-card-header>
         <mat-card-title>Select Project</mat-card-title>
-        <mat-card-subtitle>Choose the Azure DevOps project you want to work with</mat-card-subtitle>
       </mat-card-header>
       
       <mat-card-content>
