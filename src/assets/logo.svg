@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="150" height="60" viewBox="0 0 150 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="150" height="60" fill="#0078d4" rx="8"/>
+  
+  <!-- Azure DevOps Logo Elements -->
+  <circle cx="25" cy="30" r="8" fill="#ffffff"/>
+  <rect x="40" y="22" width="16" height="16" fill="#ffffff" rx="2"/>
+  <polygon points="65,22 73,22 73,38 65,38 65,30 69,26" fill="#ffffff"/>
+  
+  <!-- Text -->
+  <text x="85" y="25" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="600" fill="#ffffff">Kanban</text>
+  <text x="85" y="40" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="400" fill="#ffffff">Board</text>
+</svg>

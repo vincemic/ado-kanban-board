@@ -1,11 +1,15 @@
 <div class="login-container">
   <mat-card class="login-card">
+    <!-- Logo -->
+    <div class="logo-container">
+      <img src="assets/logo.svg" alt="Azure DevOps Kanban Board" class="app-logo">
+    </div>
+    
     <!-- Step 1: Organization and Token -->
     <div *ngIf="!showProjectSelection">
       <mat-card-header>
         <mat-card-title>Connect to Azure DevOps</mat-card-title>
         <mat-card-subtitle>
-          Enter your organization name and Personal Access Token
           <span class="service-mode" [class.mock-mode]="isMockMode()">
             ({{ getCurrentServiceType() }} mode)
           </span>
@@ -48,12 +52,6 @@
                    formControlName="accessToken" 
                    placeholder="Your PAT token"
                    required>
-            <mat-hint>
-              <a href="https://docs.microsoft.com/en-us/azure/devops/organizations/accounts/use-personal-access-tokens-to-authenticate" 
-                 target="_blank" rel="noopener">
-                How to create a Personal Access Token
-              </a>
-            </mat-hint>
             <mat-error *ngIf="loginForm.get('accessToken')?.errors?.['required']">
               Access token is required
             </mat-error>
