@@ -1,0 +1,32 @@
+{
+  "debug.javascript.autoAttachFilter": "onlyWithFlag",
+  "debug.javascript.terminalOptions": {
+    "skipFiles": [
+      "<node_internals>/**"
+    ]
+  },
+  "playwright.reuseBrowser": true,
+  "playwright.showTrace": true,
+  "typescript.preferences.debugWatchExpressions": true,
+  "typescript.suggest.autoImports": true,
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.angular": true,
+    "**/coverage": true,
+    "**/playwright-report": true,
+    "**/test-results": true
+  },
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.angular": true,
+    "**/coverage": true,
+    "**/playwright-report": true,
+    "**/test-results": true
+  },
+  "emmet.includeLanguages": {
+    "typescript": "html"
+  },
+  "angular.enable-strict-mode-prompt": false
+}

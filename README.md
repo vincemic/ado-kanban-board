@@ -1,118 +1,99 @@
-# Azure DevOps Kanban Board# AdoKanbanBoard
+# Azure DevOps Kanban Board
 
+A modern Angular application that provides a Kanban-style interface for managing Azure DevOps work items with drag-and-drop functionality.
 
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
 
-A modern Angular application that provides a Kanban-style interface for managing Azure DevOps work items with drag-and-drop functionality.This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.2.2.
+## Features
 
-
-
-## Features## Development server
-
-
-
-- 🔐 **Authentication**: Connect to any Azure DevOps organization using Personal Access TokensTo start a local development server, run:
-
+- 🔐 **Authentication**: Connect to any Azure DevOps organization using Personal Access Tokens
 - 📋 **Kanban Board**: Visual board with columns representing work item states
-
-- 🎯 **Drag & Drop**: Move work items between states with intuitive drag-and-drop```bash
-
-- ✏️ **Work Item Management**: Create, edit, and delete work itemsng serve
-
-- 🏷️ **Rich Metadata**: Support for work item types, priorities, tags, and assignments```
-
+- 🎯 **Drag & Drop**: Move work items between states with intuitive drag-and-drop
+- ✏️ **Work Item Management**: Create, edit, and delete work items
+- 🏷️ **Rich Metadata**: Support for work item types, priorities, tags, and assignments
 - 📱 **Responsive Design**: Works on desktop and mobile devices
+- 🎨 **Material Design**: Modern UI using Angular Material components
 
-- 🎨 **Material Design**: Modern UI using Angular Material componentsOnce the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## Getting Started
 
+### Prerequisites
 
-
-## Getting Started## Code scaffolding
-
-
-
-### PrerequisitesAngular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-
-
-- Node.js (v18 or higher)```bash
-
-- npmng generate component component-name
-
-- An Azure DevOps organization and project```
-
+- Node.js (v18 or higher)
+- npm
+- An Azure DevOps organization and project
 - Personal Access Token with Work Items (read & write) permissions
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
 
 ### Installation
 
+1. Clone the repository:
 ```bash
-
-1. Clone the repository:ng generate --help
-
-```bash```
-
 git clone <repository-url>
-
-cd ado-kanban-board## Building
-
+cd ado-kanban-board
 ```
-
-To build the project run:
 
 2. Install dependencies:
-
-```bash```bash
-
-npm installng build
-
-``````
-
-
-
-3. Start the development server:This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
 ```bash
-
-ng serve## Running unit tests
-
+npm install
 ```
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+3. Start the development server:
+```bash
+ng serve
+```
 
 4. Open your browser and navigate to `http://localhost:4200`
 
-```bash
-
-### Azure DevOps Setupng test
-
-```
+### Azure DevOps Setup
 
 1. Go to your Azure DevOps organization
-
-2. Navigate to **User Settings** > **Personal Access Tokens**## Running end-to-end tests
-
+2. Navigate to **User Settings** > **Personal Access Tokens**
 3. Create a new token with **Work Items (read & write)** permissions
+4. Copy the token for use in the application
 
-4. Copy the token for use in the applicationFor end-to-end (e2e) testing, run:
+### Using the Application
 
-
-
-### Using the Application```bash
-
-ng e2e
-
-1. **Login**: Enter your Azure DevOps organization URL, project name, and Personal Access Token```
-
+1. **Login**: Enter your Azure DevOps organization URL, project name, and Personal Access Token
 2. **View Board**: See your work items organized in columns by state
-
-3. **Drag & Drop**: Move work items between columns to change their stateAngular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
+3. **Drag & Drop**: Move work items between columns to change their state
 4. **Create Work Items**: Click the "New Work Item" button to add new items
-
-5. **Edit Work Items**: Click on any work item to edit its details## Additional Resources
-
+5. **Edit Work Items**: Click on any work item to edit its details
 6. **Refresh**: Use the refresh button to reload data from Azure DevOps
+
+## Development server
+
+To start a local development server, run:
+
+```bash
+ng serve
+```
+
+Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+
+## Code scaffolding
+
+Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+
+```bash
+ng generate component component-name
+```
+
+For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+
+```bash
+ng generate --help
+```
+
+## Building
+
+To build the project run:
+
+```bash
+ng build
+```
+
+This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+
+## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
 
@@ -161,17 +142,51 @@ Personal Access Tokens are stored in browser localStorage for convenience in thi
 
 ## Development
 
-### Running Tests
-```bash
-ng test
-```
-
 ### Building for Production
+
 ```bash
 ng build --prod
 ```
 
+### End-to-End Testing
+
+This project uses Playwright for end-to-end testing. Tests cover:
+
+- Login functionality and form validation
+- Kanban board display and interactions
+- Work item creation and editing
+- Drag and drop functionality
+- Responsive design and accessibility
+
+#### Running E2E Tests
+
+```bash
+# Run all tests headless
+npm run e2e
+
+# Run tests with browser UI visible
+npm run e2e:headed
+
+# Run tests with Playwright UI mode (interactive)
+npm run e2e:ui
+
+# Show test report
+npm run e2e:report
+```
+
+#### Supported Browsers
+
+Tests run on:
+- Chromium
+- WebKit (Safari engine)
+- Microsoft Edge
+- Mobile Chrome
+- Mobile Safari
+
+Note: Firefox is excluded from the test configuration.
+
 ### Linting
+
 ```bash
 ng lint
 ```
@@ -181,8 +196,7 @@ ng lint
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+4. Submit a pull request
 
 ## License
 
