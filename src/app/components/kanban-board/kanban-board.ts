@@ -101,36 +101,67 @@ export class KanbanBoard implements OnInit, OnDestroy {
       return;
     }
 
-    // Get project name from connection
+    // Get project name from connection and ensure service is initialized
     const connection = this.authService.getCurrentConnection();
     if (connection) {
       this.projectName = connection.projectName;
+      
+      // Ensure the Azure DevOps service is properly initialized with the connection
+      this.azureDevOpsService.setConnection(connection);
+    } else {
+      // If no connection despite being authenticated, something is wrong
+      console.error('No connection found despite being authenticated');
+      this.authService.logout();
+      this.router.navigate(['/login']);
+      return;
     }
 
     // Subscribe to work items and states
     this.azureDevOpsService.workItems$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((workItems: WorkItem[]) => {
-        this.workItems = workItems;
-        this.isLoading = false;
+      .subscribe({
+        next: (workItems: WorkItem[]) => {
+          this.workItems = workItems;
+          this.isLoading = false;
+        },
+        error: (error: any) => {
+          console.error('Error loading work items:', error);
+          this.errorMessage = 'Failed to load work items. Please check your connection and try again.';
+          this.isLoading = false;
+        }
       });
 
     this.azureDevOpsService.workItemStates$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((states: WorkItemState[]) => {
-        this.workItemStates = states;
+      .subscribe({
+        next: (states: WorkItemState[]) => {
+          this.workItemStates = states;
+        },
+        error: (error: any) => {
+          console.error('Error loading work item states:', error);
+        }
       });
 
     this.azureDevOpsService.teams$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((teams: Team[]) => {
-        this.teams = teams;
+      .subscribe({
+        next: (teams: Team[]) => {
+          this.teams = teams;
+        },
+        error: (error: any) => {
+          console.error('Error loading teams:', error);
+        }
       });
 
     this.azureDevOpsService.areaPaths$
       .pipe(takeUntil(this.destroy$))
-      .subscribe((areaPaths: AreaPath[]) => {
-        this.areaPaths = areaPaths;
+      .subscribe({
+        next: (areaPaths: AreaPath[]) => {
+          this.areaPaths = areaPaths;
+        },
+        error: (error: any) => {
+          console.error('Error loading area paths:', error);
+        }
       });
 
     // Load initial data
@@ -202,10 +233,17 @@ export class KanbanBoard implements OnInit, OnDestroy {
   refreshBoard(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.azureDevOpsService.loadWorkItems();
-    this.azureDevOpsService.loadWorkItemStates();
-    this.azureDevOpsService.loadTeams();
-    this.azureDevOpsService.loadAreaPaths();
+    
+    try {
+      this.azureDevOpsService.loadWorkItems();
+      this.azureDevOpsService.loadWorkItemStates();
+      this.azureDevOpsService.loadTeams();
+      this.azureDevOpsService.loadAreaPaths();
+    } catch (error) {
+      console.error('Error loading board data:', error);
+      this.errorMessage = 'Failed to load board data. Please try refreshing the page.';
+      this.isLoading = false;
+    }
   }
 
   createWorkItem(): void {
