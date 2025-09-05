@@ -1,13 +1,13 @@
 <div class="kanban-container">
   <!-- Header -->
   <div class="kanban-header">
-    <h1>{{ projectName }} - Kanban Board</h1>
+    <h1>{{ projectName() }} - Kanban Board</h1>
     <div class="header-filters">
       <mat-form-field appearance="outline" class="team-filter">
         <mat-label>Filter by Team</mat-label>
         <mat-select [value]="selectedTeam()" (selectionChange)="onTeamFilterChange($event.value)">
           <mat-option value="all">All Teams</mat-option>
-          <mat-option *ngFor="let team of teams" [value]="team.name">
+          <mat-option *ngFor="let team of teams()" [value]="team.name">
             {{ team.name }}
           </mat-option>
         </mat-select>
@@ -30,14 +30,14 @@
   </div>
 
   <!-- Loading indicator -->
-  <div *ngIf="isLoading" class="loading-container">
+  <div *ngIf="isLoading()" class="loading-container">
     <mat-spinner></mat-spinner>
     <p>Loading work items...</p>
   </div>
 
   <!-- Kanban Board -->
-  <div *ngIf="!isLoading" class="kanban-board" cdkDropListGroup>
-    <div *ngFor="let state of workItemStates" class="kanban-column">
+  <div *ngIf="!isLoading()" class="kanban-board" cdkDropListGroup>
+    <div *ngFor="let state of workItemStates()" class="kanban-column">
       <div class="column-header">
         <h3>{{ state.name }}</h3>
         <span class="item-count">{{ getWorkItemsForState(state.name).length }}</span>
@@ -105,12 +105,12 @@
 </div>
 
 <!-- Error message -->
-<div *ngIf="errorMessage" class="error-container">
+<div *ngIf="errorMessage()" class="error-container">
   <mat-card class="error-card">
     <mat-card-content>
       <mat-icon class="error-icon">error</mat-icon>
       <h3>Error</h3>
-      <p>{{ errorMessage }}</p>
+      <p>{{ errorMessage() }}</p>
       <button mat-button color="primary" (click)="clearError()">Dismiss</button>
     </mat-card-content>
   </mat-card>

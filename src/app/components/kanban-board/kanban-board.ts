@@ -37,56 +37,25 @@ import { WorkItemDialog } from '../work-item-dialog/work-item-dialog';
   styleUrl: './kanban-board.scss'
 })
 export class KanbanBoard implements OnInit, OnDestroy {
-  workItems: WorkItem[] = [];
-  workItemStates: WorkItemState[] = [];
-  teams: Team[] = [];
-  areaPaths: AreaPath[] = [];
-  projectName = '';
-  isLoading = true;
-  errorMessage = '';
+  workItems = signal<WorkItem[]>([]);
+  workItemStates = signal<WorkItemState[]>([]);
+  teams = signal<Team[]>([]);
+  areaPaths = signal<AreaPath[]>([]);
+  projectName = signal<string>('');
+  isLoading = signal<boolean>(true);
+  errorMessage = signal<string>('');
   
   // Team filtering
   selectedTeam = signal<string>('all');
   
   // Manual signal to trigger recalculation of filtered items
   private workItemsUpdateTrigger = signal(0);
-  private teamsUpdateTrigger = signal(0);
   
-  // Computed filtered work items that reacts to changes
+  // Computed to return all work items (filtering is now done server-side)
   filteredWorkItems = computed(() => {
     // React to trigger signals
     this.workItemsUpdateTrigger();
-    this.teamsUpdateTrigger();
-    
-    if (this.selectedTeam() === 'all') {
-      return this.workItems;
-    }
-    
-    // Find the selected team by name and get its area paths
-    const selectedTeam = this.teams.find(team => team.name === this.selectedTeam());
-    if (!selectedTeam) {
-      return this.workItems;
-    }
-    
-    // Filter work items by area paths that belong to the selected team
-    return this.workItems.filter(item => {
-      if (!item.areaPath) {
-        return false;
-      }
-      
-      // Check if the work item's area path matches any of the team's area paths
-      // This includes checking for exact matches and child paths if includeChildren is true
-      return selectedTeam.areaPaths.some(teamAreaPath => {
-        // Exact match
-        if (item.areaPath === teamAreaPath) {
-          return true;
-        }
-        
-        // Check if work item area path is a child of team area path
-        // This happens when a team has includeChildren=true for an area
-        return item.areaPath?.startsWith(teamAreaPath + '\\');
-      });
-    });
+    return this.workItems();
   });
   
   private azureDevOpsService: AzureDevOpsService | any;
@@ -112,7 +81,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
     // Get project name from connection and ensure service is initialized
     const connection = this.authService.getCurrentConnection();
     if (connection) {
-      this.projectName = connection.projectName;
+      this.projectName.set(connection.projectName);
       
       // Ensure the Azure DevOps service is properly initialized with the connection
       this.azureDevOpsService.setConnection(connection);
@@ -129,14 +98,14 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (workItems: WorkItem[]) => {
-          this.workItems = workItems;
+          this.workItems.set(workItems);
           this.workItemsUpdateTrigger.update(v => v + 1);
-          this.isLoading = false;
+          this.isLoading.set(false);
         },
         error: (error: any) => {
           console.error('Error loading work items:', error);
-          this.errorMessage = 'Failed to load work items. Please check your connection and try again.';
-          this.isLoading = false;
+          this.errorMessage.set('Failed to load work items. Please check your connection and try again.');
+          this.isLoading.set(false);
         }
       });
 
@@ -144,7 +113,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (states: WorkItemState[]) => {
-          this.workItemStates = states;
+          this.workItemStates.set(states);
         },
         error: (error: any) => {
           console.error('Error loading work item states:', error);
@@ -155,8 +124,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (teams: Team[]) => {
-          this.teams = teams;
-          this.teamsUpdateTrigger.update(v => v + 1);
+          this.teams.set(teams);
         },
         error: (error: any) => {
           console.error('Error loading teams:', error);
@@ -167,7 +135,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (areaPaths: AreaPath[]) => {
-          this.areaPaths = areaPaths;
+          this.areaPaths.set(areaPaths);
         },
         error: (error: any) => {
           console.error('Error loading area paths:', error);
@@ -189,6 +157,11 @@ export class KanbanBoard implements OnInit, OnDestroy {
 
   onTeamFilterChange(teamName: string): void {
     this.selectedTeam.set(teamName);
+    
+    // Refresh work items from the API with the selected team filter
+    this.isLoading.set(true);
+    this.errorMessage.set('');
+    this.azureDevOpsService.loadWorkItems(teamName);
   }
 
   onWorkItemDrop(event: CdkDragDrop<WorkItem[]>): void {
@@ -214,7 +187,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
 
   private getStateFromContainer(container: any): string | null {
     // Find the state based on the container data
-    for (const state of this.workItemStates) {
+    for (const state of this.workItemStates()) {
       if (this.getWorkItemsForState(state.name) === container.data) {
         return state.name;
       }
@@ -227,33 +200,36 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .subscribe({
         next: (updatedWorkItem: WorkItem) => {
           // Update the local work item
-          const index = this.workItems.findIndex(item => item.id === updatedWorkItem.id);
+          const currentWorkItems = this.workItems();
+          const index = currentWorkItems.findIndex(item => item.id === updatedWorkItem.id);
           if (index !== -1) {
-            this.workItems[index] = updatedWorkItem;
+            const updatedWorkItems = [...currentWorkItems];
+            updatedWorkItems[index] = updatedWorkItem;
+            this.workItems.set(updatedWorkItems);
             this.workItemsUpdateTrigger.update(v => v + 1);
           }
         },
         error: (error: any) => {
           console.error('Error updating work item state:', error);
-          this.errorMessage = 'Failed to update work item state. Please try again.';
+          this.errorMessage.set('Failed to update work item state. Please try again.');
           this.refreshBoard(); // Refresh to revert changes
         }
       });
   }
 
   refreshBoard(): void {
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
     
     try {
-      this.azureDevOpsService.loadWorkItems();
+      this.azureDevOpsService.loadWorkItems(this.selectedTeam());
       this.azureDevOpsService.loadWorkItemStates();
       this.azureDevOpsService.loadTeams();
       this.azureDevOpsService.loadAreaPaths();
     } catch (error) {
       console.error('Error loading board data:', error);
-      this.errorMessage = 'Failed to load board data. Please try refreshing the page.';
-      this.isLoading = false;
+      this.errorMessage.set('Failed to load board data. Please try refreshing the page.');
+      this.isLoading.set(false);
     }
   }
 
@@ -261,9 +237,9 @@ export class KanbanBoard implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(WorkItemDialog, {
       width: '600px',
       data: {
-        availableStates: this.workItemStates,
-        availableTeams: this.teams,
-        availableAreaPaths: this.areaPaths
+        availableStates: this.workItemStates(),
+        availableTeams: this.teams(),
+        availableAreaPaths: this.areaPaths()
       }
     });
 
@@ -280,18 +256,21 @@ export class KanbanBoard implements OnInit, OnDestroy {
       width: '600px',
       data: {
         workItem: workItem,
-        availableStates: this.workItemStates,
-        availableTeams: this.teams,
-        availableAreaPaths: this.areaPaths
+        availableStates: this.workItemStates(),
+        availableTeams: this.teams(),
+        availableAreaPaths: this.areaPaths()
       }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         // Update the work item in the local array
-        const index = this.workItems.findIndex(item => item.id === workItem.id);
+        const currentWorkItems = this.workItems();
+        const index = currentWorkItems.findIndex(item => item.id === workItem.id);
         if (index !== -1) {
-          this.workItems[index] = { ...this.workItems[index], ...result };
+          const updatedWorkItems = [...currentWorkItems];
+          updatedWorkItems[index] = { ...updatedWorkItems[index], ...result };
+          this.workItems.set(updatedWorkItems);
           this.workItemsUpdateTrigger.update(v => v + 1);
         }
       }
@@ -304,7 +283,9 @@ export class KanbanBoard implements OnInit, OnDestroy {
       console.log('Delete work item:', workItem);
       
       // For now, just remove from local array
-      this.workItems = this.workItems.filter(item => item.id !== workItem.id);
+      const currentWorkItems = this.workItems();
+      const updatedWorkItems = currentWorkItems.filter(item => item.id !== workItem.id);
+      this.workItems.set(updatedWorkItems);
       this.workItemsUpdateTrigger.update(v => v + 1);
     }
   }
@@ -315,6 +296,6 @@ export class KanbanBoard implements OnInit, OnDestroy {
   }
 
   clearError(): void {
-    this.errorMessage = '';
+    this.errorMessage.set('');
   }
 }

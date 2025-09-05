@@ -80,15 +80,33 @@ export class AzureDevOpsService {
       );
   }
 
-  loadWorkItems(): void {
+  loadWorkItems(selectedTeam?: string): void {
     const connection = this.getCurrentConnection();
     if (!connection) {
       console.error('No connection configured');
       return;
     }
 
+    // Build the base query
+    let whereClause = `[System.TeamProject] = '${connection.projectName}'`;
+    
+    // Add area path filtering if a specific team is selected
+    if (selectedTeam && selectedTeam !== 'all') {
+      const teams = this.teamsSubject.value;
+      const team = teams.find(t => t.name === selectedTeam);
+      
+      if (team && team.areaPaths && team.areaPaths.length > 0) {
+        // Create area path conditions for the team
+        const areaPathConditions = team.areaPaths.map(areaPath => 
+          `[System.AreaPath] = '${areaPath}' OR [System.AreaPath] UNDER '${areaPath}'`
+        ).join(' OR ');
+        
+        whereClause += ` AND (${areaPathConditions})`;
+      }
+    }
+
     const wiqlQuery = {
-      query: `SELECT [System.Id], [System.Title], [System.Description], [System.AssignedTo], [System.State], [System.WorkItemType], [Microsoft.VSTS.Common.Priority], [System.Tags], [System.TeamProject], [System.AreaPath], [System.CreatedDate], [System.ChangedDate] FROM WorkItems WHERE [System.TeamProject] = '${connection.projectName}' ORDER BY [System.Id]`
+      query: `SELECT [System.Id], [System.Title], [System.Description], [System.AssignedTo], [System.State], [System.WorkItemType], [Microsoft.VSTS.Common.Priority], [System.Tags], [System.TeamProject], [System.AreaPath], [System.CreatedDate], [System.ChangedDate] FROM WorkItems WHERE ${whereClause} ORDER BY [System.Id]`
     };
 
     const url = `${connection.organizationUrl}/${connection.projectName}/_apis/wit/wiql?api-version=7.0`;

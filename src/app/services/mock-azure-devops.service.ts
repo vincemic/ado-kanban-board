@@ -213,10 +213,36 @@ export class MockAzureDevOpsService {
     return of(this.mockProjects).pipe(delay(1000));
   }
 
-  loadWorkItems(): void {
+  loadWorkItems(selectedTeam?: string): void {
     // Simulate loading delay
     setTimeout(() => {
-      this.workItemsSubject.next([...this.mockWorkItems]);
+      let filteredWorkItems = [...this.mockWorkItems];
+      
+      // Apply team filtering if specified
+      if (selectedTeam && selectedTeam !== 'all') {
+        const team = this.mockTeams.find(t => t.name === selectedTeam);
+        
+        if (team && team.areaPaths && team.areaPaths.length > 0) {
+          filteredWorkItems = this.mockWorkItems.filter(item => {
+            if (!item.areaPath) {
+              return false;
+            }
+            
+            // Check if the work item's area path matches any of the team's area paths
+            return team.areaPaths.some(teamAreaPath => {
+              // Exact match
+              if (item.areaPath === teamAreaPath) {
+                return true;
+              }
+              
+              // Check if work item area path is a child of team area path
+              return item.areaPath?.startsWith(teamAreaPath + '\\\\');
+            });
+          });
+        }
+      }
+      
+      this.workItemsSubject.next(filteredWorkItems);
     }, 500);
   }
 
