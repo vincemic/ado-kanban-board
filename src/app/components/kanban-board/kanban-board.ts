@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, computed, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, computed, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -48,8 +48,16 @@ export class KanbanBoard implements OnInit, OnDestroy {
   // Team filtering
   selectedTeam = signal<string>('all');
   
-  // Computed filtered work items
+  // Manual signal to trigger recalculation of filtered items
+  private workItemsUpdateTrigger = signal(0);
+  private teamsUpdateTrigger = signal(0);
+  
+  // Computed filtered work items that reacts to changes
   filteredWorkItems = computed(() => {
+    // React to trigger signals
+    this.workItemsUpdateTrigger();
+    this.teamsUpdateTrigger();
+    
     if (this.selectedTeam() === 'all') {
       return this.workItems;
     }
@@ -122,6 +130,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .subscribe({
         next: (workItems: WorkItem[]) => {
           this.workItems = workItems;
+          this.workItemsUpdateTrigger.update(v => v + 1);
           this.isLoading = false;
         },
         error: (error: any) => {
@@ -147,6 +156,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       .subscribe({
         next: (teams: Team[]) => {
           this.teams = teams;
+          this.teamsUpdateTrigger.update(v => v + 1);
         },
         error: (error: any) => {
           console.error('Error loading teams:', error);
@@ -220,6 +230,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
           const index = this.workItems.findIndex(item => item.id === updatedWorkItem.id);
           if (index !== -1) {
             this.workItems[index] = updatedWorkItem;
+            this.workItemsUpdateTrigger.update(v => v + 1);
           }
         },
         error: (error: any) => {
@@ -281,6 +292,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
         const index = this.workItems.findIndex(item => item.id === workItem.id);
         if (index !== -1) {
           this.workItems[index] = { ...this.workItems[index], ...result };
+          this.workItemsUpdateTrigger.update(v => v + 1);
         }
       }
     });
@@ -293,6 +305,7 @@ export class KanbanBoard implements OnInit, OnDestroy {
       
       // For now, just remove from local array
       this.workItems = this.workItems.filter(item => item.id !== workItem.id);
+      this.workItemsUpdateTrigger.update(v => v + 1);
     }
   }
 

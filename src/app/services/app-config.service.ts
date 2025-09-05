@@ -15,14 +15,30 @@ export class AppConfigService {
   private initializeMockMode(): void {
     if (this.mockModeChecked) return;
     
-    // Check window.location.search for mock parameter
-    // This needs to be done before any router redirects
-    const urlParams = new URLSearchParams(window.location.search);
-    const mockParam = urlParams.get('mock');
+    // Check for mock parameter from the original URL (stored in sessionStorage)
+    // This preserves the query parameter that gets lost during Angular routing
+    let mockParam: string | null = null;
+    
+    // First try to get from the original URL stored in sessionStorage
+    const originalUrl = sessionStorage.getItem('originalUrl');
+    if (originalUrl) {
+      try {
+        const urlObj = new URL(originalUrl);
+        mockParam = urlObj.searchParams.get('mock');
+        console.log('Using original URL for mock detection:', originalUrl);
+      } catch (error) {
+        console.warn('Error parsing original URL:', error);
+      }
+    }
+    
+    // Fallback to current URL if originalUrl is not available
+    if (mockParam === null) {
+      const urlParams = new URLSearchParams(window.location.search);
+      mockParam = urlParams.get('mock');
+      console.log('Fallback to current URL for mock detection:', window.location.href);
+    }
     
     console.log('AppConfigService initialization:');
-    console.log('Window location href:', window.location.href);
-    console.log('Window location search:', window.location.search);
     console.log('Mock param from URL:', mockParam);
     
     if (mockParam === 'true') {
