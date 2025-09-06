@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Azure DevOps Kanban Board</title>
+  <script>
+    // GitHub Pages SPA redirect
+    // This script takes the current location and redirects to the index.html page 
+    // with the current path as a query parameter. This allows the Angular router 
+    // to handle the routing on the client side.
+    
+    var pathSegmentsToKeep = 1; // Change this if your GitHub Pages site is not at the root
+    
+    var l = window.location;
+    l.replace(
+      l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+      l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + 
+      '/?/' +
+      l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+      (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+      l.hash
+    );
+  </script>
+</head>
+<body>
+  <!-- This page is a fallback for when someone navigates directly to a route in your SPA -->
+  <noscript>
+    <p>JavaScript is required to run this application. Please enable JavaScript and reload the page.</p>
+  </noscript>
+</body>
+</html>
